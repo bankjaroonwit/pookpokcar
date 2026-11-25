@@ -1,0 +1,12 @@
+name = "pookpok-bot"
+main = "worker.js"
+compatibility_date = "2025-11-01"
+workers_dev = true
+
+# ที่เก็บข้อมูลที่จอด (สร้างด้วย: npx wrangler kv namespace create KV)
+[[kv_namespaces]]
+binding = "KV"
+id = "2d285475adb74118bb066b4feb1c77fc"
+
+[observability]
+enabled = true
