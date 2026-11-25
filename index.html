@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>ปุกป็อก | จำที่จอดรถ</title>
-<meta name="theme-color" content="#F2FBF7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#101614" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F6F8F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#090C0B" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script>
 const v = (name) => `rgb(var(--${name}) / <alpha-value>)`;
 tailwind.config = {
@@ -24,256 +24,304 @@ tailwind.config = {
     extend: {
       fontFamily: { kanit: ['Kanit', 'sans-serif'] },
       colors: {
-        page: v('page'), card: v('card'), field: v('field'),
-        line: v('line'), line2: v('line2'),
+        page: v('page'), card: v('card'), field: v('field'), line: v('line'),
         ink: { DEFAULT: v('ink'), 2: v('ink2'), 3: v('ink3') },
-        accent: { DEFAULT: v('accent'), d: v('accent-d'), soft: v('accent-soft') },
-        danger: { DEFAULT: v('danger'), soft: v('danger-soft'), line: v('danger-line') }
+        accent: { DEFAULT: v('accent'), d: v('accent-d'), soft: v('accent-soft') }
       },
-      boxShadow: { soft: '0 6px 24px -8px rgb(var(--shadow) / .18)' }
+      boxShadow: {
+        soft: '0 1px 2px rgb(var(--shadow) / .04), 0 8px 24px -12px rgb(var(--shadow) / .18)',
+        glow: '0 10px 30px -10px rgb(5 150 105 / .65)'
+      }
     }
   }
 }
 </script>
 <style>
   :root {
-    --page: 242 251 247; --card: 255 255 255; --field: 242 251 247;
-    --line: 223 245 234; --line2: 189 234 214;
-    --ink: 40 49 46; --ink2: 91 103 99; --ink3: 154 165 161;
-    --accent: 59 182 140; --accent-d: 46 156 119; --accent-soft: 223 245 234;
-    --danger: 239 68 68; --danger-soft: 254 242 242; --danger-line: 254 226 226;
-    --shadow: 45 80 65;
+    --page: 246 248 247; --card: 255 255 255; --field: 241 245 243; --line: 226 233 230;
+    --ink: 15 23 20; --ink2: 71 85 80; --ink3: 138 151 146;
+    --accent: 16 185 129; --accent-d: 5 150 105; --accent-soft: 214 247 232;
+    --shadow: 15 40 30;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --page: 16 22 20; --card: 26 34 31; --field: 34 44 40;
-      --line: 44 56 51; --line2: 62 80 72;
-      --ink: 232 240 236; --ink2: 182 194 189; --ink3: 126 140 134;
-      --accent: 72 196 152; --accent-d: 59 182 140; --accent-soft: 30 58 48;
-      --danger: 248 113 113; --danger-soft: 50 26 26; --danger-line: 80 36 36;
+      --page: 9 12 11; --card: 21 26 24; --field: 30 37 34; --line: 40 49 45;
+      --ink: 236 242 239; --ink2: 170 184 178; --ink3: 110 124 118;
+      --accent: 52 211 153; --accent-d: 16 185 129; --accent-soft: 10 60 45;
       --shadow: 0 0 0;
     }
   }
-  body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
-  .fade-in { animation: fade .28s ease-out both; }
-  @keyframes fade { from { opacity:0; transform: translateY(8px);} to {opacity:1; transform:none;} }
-  .press:active { transform: scale(.97); }
-  .press { transition: transform .12s ease, background-color .2s ease; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; font-feature-settings: "tnum"; }
+  .grad { background: linear-gradient(135deg, #059669 0%, #0d9488 100%); }
+  .glass { background: rgb(var(--page) / .78); -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6); }
+  .fade-in { animation: fade .3s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes fade { from { opacity:0; transform: translateY(10px);} to {opacity:1; transform:none;} }
+  .pop { animation: pop .35s cubic-bezier(.2,.9,.3,1.3) both; }
+  @keyframes pop { from { opacity:0; transform: scale(.92);} to {opacity:1; transform:none;} }
+  .press { transition: transform .12s ease, background-color .2s ease, box-shadow .2s ease, color .2s ease; }
+  .press:active { transform: scale(.96); }
   input:focus { outline: none; }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { scrollbar-width: none; }
-  .chip { transition: background-color .15s ease, color .15s ease, border-color .15s ease; }
-  .chip[aria-pressed="true"] { background: rgb(var(--accent)); border-color: rgb(var(--accent)); color: #fff; }
-  .pin { position:absolute; transform: translate(-50%, -100%); pointer-events:none; line-height:1;
-         filter: drop-shadow(0 2px 3px rgba(0,0,0,.55)); }
-  .pin::after { content:''; position:absolute; left:50%; bottom:-6px; width:14px; height:14px; margin-left:-7px;
-         border-radius:9999px; border:2px solid #fff; background: rgba(239,68,68,.45); animation: ping 1.4s ease-out infinite; }
-  @keyframes ping { 0% { transform: scale(.6); opacity: 1; } 100% { transform: scale(2.4); opacity: 0; } }
+  .ico { display:inline-block; flex-shrink:0; }
+
+  /* ปุ่มเลือก (pill) */
+  .pill { background: rgb(var(--field)); color: rgb(var(--ink2)); border: 1px solid transparent; }
+  .pill[aria-pressed="true"] { background: linear-gradient(135deg, #059669, #0d9488); color: #fff; box-shadow: 0 6px 16px -6px rgb(5 150 105 / .7); }
+  .tile[aria-pressed="true"] { background: rgb(var(--accent-soft)); border-color: rgb(var(--accent)); color: rgb(var(--accent-d)); }
+  @media (prefers-color-scheme: dark) { .tile[aria-pressed="true"] { color: rgb(var(--accent)); } }
+
+  /* หมุดบนรูป */
+  .pin { position:absolute; width:0; height:0; pointer-events:none; }
+  .pin .drop { position:absolute; left:-14px; top:-34px; width:28px; height:28px; background:#EF4444;
+    border:3px solid #fff; border-radius:50% 50% 50% 0; transform:rotate(-45deg); box-shadow:0 4px 12px rgba(0,0,0,.45); }
+  .pin .drop::after { content:''; position:absolute; inset:6px; border-radius:50%; background:#fff; }
+  .pin .ring { position:absolute; left:-9px; top:-9px; width:18px; height:18px; border-radius:50%;
+    border:2px solid #fff; background:rgba(239,68,68,.5); animation: ping 1.5s ease-out infinite; }
+  @keyframes ping { 0% { transform: scale(.5); opacity: 1; } 100% { transform: scale(2.6); opacity: 0; } }
+
+  /* จอเตี้ย (เช่น iPhone SE): ย่อตั๋วให้พอดีจอเดียว */
+  @media (max-height: 720px) {
+    #ticket { padding: 16px; }
+    #rowExit { margin-top: 12px; padding-top: 8px; padding-bottom: 8px; }
+    #rowTiles { margin-top: 10px; }
+    #outFloor, #outZone { font-size: 52px; }
+    #noteRow { padding-top: 10px; padding-bottom: 10px; }
+  }
 </style>
 </head>
 
 <body class="font-kanit bg-page text-ink min-h-screen antialiased">
+<div class="pointer-events-none fixed inset-x-0 top-0 h-72 -z-10" style="background: radial-gradient(70% 100% at 50% 0%, rgb(var(--accent) / .16), transparent 70%)"></div>
 
 <!-- ====== SPLASH ====== -->
-<div id="splash" class="fixed inset-0 z-50 bg-page flex flex-col items-center justify-center gap-3">
-  <div class="w-14 h-14 rounded-full border-4 border-line2 border-t-accent animate-spin"></div>
-  <p class="text-ink-3 text-sm font-light">กำลังเตรียมความพร้อม...</p>
+<div id="splash" class="fixed inset-0 z-[70] bg-page flex flex-col items-center justify-center gap-4">
+  <img src="icons/icon-192.png" alt="" class="w-16 h-16 rounded-[22px] shadow-glow pop">
+  <div class="w-6 h-6 rounded-full border-[3px] border-line border-t-accent animate-spin"></div>
 </div>
 
 <!-- ====== TOAST ====== -->
-<div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-[60] hidden max-w-[90%]">
-  <div id="toastBox" class="px-5 py-3 rounded-2xl shadow-soft text-sm text-white text-center"></div>
+<div id="toast" class="fixed left-1/2 -translate-x-1/2 z-[60] hidden max-w-[92%]" style="top:max(14px, env(safe-area-inset-top))">
+  <div id="toastBox" class="pop flex items-center gap-2 pl-3 pr-4 py-2.5 rounded-full shadow-soft text-sm text-white"></div>
 </div>
 
 <!-- ====== HEADER ====== -->
-<header class="px-4 pt-4 pb-2 flex items-center justify-between max-w-md mx-auto">
+<header class="px-5 pb-2 max-w-md mx-auto flex items-center justify-between" style="padding-top:max(16px, env(safe-area-inset-top))">
   <div class="flex items-center gap-2.5">
-    <img src="icons/icon-192.png" alt="" class="w-10 h-10 rounded-2xl shadow-soft">
-    <div>
-      <h1 class="text-lg font-semibold leading-tight">ปุกป็อก</h1>
-      <p class="text-[11px] text-ink-3 font-light leading-tight">ตัวช่วยคนขี้ลืม จำที่จอดรถ</p>
+    <img src="icons/icon-192.png" alt="" class="w-9 h-9 rounded-xl shadow-soft">
+    <div class="leading-tight">
+      <h1 class="text-[17px] font-semibold">ปุกป็อก</h1>
+      <p class="text-[11px] text-ink-3 font-light">จำที่จอดรถ</p>
     </div>
   </div>
+  <span id="headStatus" class="hidden items-center gap-1.5 text-xs font-medium text-accent-d bg-accent-soft rounded-full px-3 py-1.5">
+    <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span> จอดอยู่
+  </span>
 </header>
 
-<main class="px-4 pb-44 pt-1 max-w-md mx-auto">
+<main id="main" class="px-4 pb-40 pt-2 max-w-md mx-auto">
 
   <!-- ================= FORM : บันทึก / แก้ไข ================= -->
-  <section id="viewForm" class="hidden fade-in">
-    <div id="introCard" class="bg-card rounded-3xl shadow-soft p-5 flex items-center gap-4">
-      <div class="w-14 h-14 shrink-0 rounded-full bg-accent-soft flex items-center justify-center text-3xl">🚗</div>
-      <div>
-        <h2 class="text-lg font-medium leading-snug">จอดตรงไหน จดไว้เลย</h2>
-        <p class="text-ink-3 text-xs font-light mt-0.5">กดเลือกชั้น โซน ทางออก แล้วถ่ายรูปไว้ ขากลับจะได้ไม่หลง</p>
-      </div>
-    </div>
-    <h2 id="editTitle" class="hidden text-xl font-medium px-1">✏️ แก้ไขข้อมูลที่จอด</h2>
-
-    <!-- ชั้น -->
-    <div class="mt-4 bg-card rounded-3xl shadow-soft p-4">
-      <div class="flex items-center justify-between">
-        <label class="text-sm font-medium" for="inpFloor">ชั้น</label>
-        <input id="inpFloor" type="text" maxlength="10" placeholder="พิมพ์เอง"
-          class="w-24 px-3 py-1.5 rounded-xl bg-field border border-line focus:border-accent text-base text-center">
-      </div>
-      <div id="floorChips" class="mt-3 grid grid-cols-5 gap-2"></div>
+  <section id="viewForm" class="hidden">
+    <div class="px-1 mb-4 fade-in">
+      <h2 id="formTitle" class="text-[28px] font-semibold leading-tight tracking-tight">จอดตรงไหน?</h2>
+      <p id="formSub" class="text-sm text-ink-3 font-light mt-0.5">แตะเลือกไม่กี่ที ขากลับไม่หลง</p>
     </div>
 
-    <!-- โซน / เสา -->
-    <div class="mt-3 bg-card rounded-3xl shadow-soft p-4">
-      <div class="flex items-center justify-between">
-        <label class="text-sm font-medium" for="inpZone">โซน / เสา</label>
-        <input id="inpZone" type="text" maxlength="30" placeholder="เช่น C4"
-          class="w-32 px-3 py-1.5 rounded-xl bg-field border border-line focus:border-accent text-base text-center">
-      </div>
-      <div id="zoneLetters" class="mt-3 flex gap-2 overflow-x-auto no-scrollbar"></div>
-      <div id="zoneNums" class="mt-2 flex gap-2 overflow-x-auto no-scrollbar"></div>
-    </div>
-
-    <!-- ทางออก -->
-    <div class="mt-3 bg-card rounded-3xl shadow-soft p-4">
-      <p class="text-sm font-medium">เดินออกทางไหน <span class="text-ink-3 font-light text-xs">ขากลับจะได้ย้อนทางเดิม</span></p>
-      <div id="exitChips" class="mt-3 grid grid-cols-2 gap-2"></div>
-      <input id="inpExit" type="text" maxlength="60" placeholder="ฝั่ง / จุดสังเกต เช่น ฝั่งโรงหนัง"
-        class="w-full mt-2 px-4 py-3 rounded-2xl bg-field border border-line focus:border-accent text-base">
-    </div>
-
-    <!-- รูปภาพ -->
-    <div class="mt-3 bg-card rounded-3xl shadow-soft p-4">
-      <p class="text-sm font-medium">รูปถ่าย <span class="text-ink-3 font-light text-xs">สูงสุด 3 รูป · แตะรูปเพื่อปักหมุดจุดรถ</span></p>
-      <div id="photoGrid" class="mt-3 grid grid-cols-3 gap-2"></div>
-      <input type="file" id="fileInput" accept="image/*" capture="environment" class="hidden">
-    </div>
-
-    <!-- โน้ต + GPS -->
-    <div class="mt-3 bg-card rounded-3xl shadow-soft p-4 space-y-3">
-      <div>
-        <label class="text-xs text-ink-3" for="inpNote">โน้ตเพิ่มเติม</label>
-        <input id="inpNote" type="text" maxlength="120" placeholder="เช่น จอดข้างรถตู้สีขาว"
-          class="w-full mt-1 px-4 py-3 rounded-2xl bg-field border border-line focus:border-accent text-base">
-      </div>
-      <label class="flex items-start gap-3 pt-1 cursor-pointer select-none">
-        <input id="chkGps" type="checkbox" checked class="w-5 h-5 mt-0.5 accent-[rgb(var(--accent))] rounded">
-        <span class="text-sm text-ink-2"><span id="gpsLabel">บันทึกพิกัด GPS</span>
-          <span class="block text-[11px] text-ink-3 font-light">ใช้นำทางได้เฉพาะที่จอดกลางแจ้ง (ใต้ดิน/ในตึก GPS ไม่แม่น)</span></span>
-      </label>
-    </div>
-
-    <p class="text-center text-[11px] text-ink-3 font-light mt-4">ข้อมูลถูกเก็บไว้ในเครื่องคุณเท่านั้น</p>
-  </section>
-
-  <!-- ================= GUIDE : พาไปหารถ (หน้าเดียวจบ) ================= -->
-  <section id="viewParked" class="hidden fade-in">
-    <div class="flex items-center justify-between px-1">
-      <span class="flex items-center gap-2 text-accent-d text-sm font-medium">
-        <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
-        จอดมาแล้ว <span id="outElapsed">-</span>
-      </span>
-      <span id="outTime" class="text-xs text-ink-3 font-light">-</span>
-    </div>
-
-    <div class="mt-2 bg-card rounded-3xl shadow-soft p-3">
-      <div id="rowExit" class="flex items-center gap-2.5 px-1 pb-2.5">
-        <span id="numExit" class="w-6 h-6 shrink-0 rounded-full bg-accent text-white flex items-center justify-center text-xs font-semibold">1</span>
-        <span class="text-xs text-ink-3 shrink-0">กลับทางเดิม</span>
-        <span id="outExit" class="text-lg font-semibold leading-tight break-words min-w-0"></span>
-      </div>
-      <div id="rowTiles" class="grid grid-cols-2 gap-2">
-        <div class="bg-field rounded-2xl px-3 py-2">
-          <div class="flex items-center gap-1.5 text-xs text-ink-3">
-            <span id="numFloor" class="w-5 h-5 rounded-full bg-accent text-white flex items-center justify-center text-[11px] font-semibold">2</span> ชั้น
-          </div>
-          <p id="outFloor" class="text-5xl font-semibold text-accent-d leading-tight tracking-wide truncate">–</p>
+    <div class="space-y-3">
+      <!-- รูป -->
+      <div class="bg-card rounded-[24px] shadow-soft p-4 fade-in">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5"><span data-i="camera" class="bub"></span><span class="font-medium">รูปถ่าย</span></div>
+          <span id="photoCount" class="text-xs text-ink-3"></span>
         </div>
-        <div class="bg-field rounded-2xl px-3 py-2">
-          <div class="flex items-center gap-1.5 text-xs text-ink-3">
-            <span id="numZone" class="w-5 h-5 rounded-full bg-accent text-white flex items-center justify-center text-[11px] font-semibold">3</span> โซน / เสา
-          </div>
-          <p id="outZone" class="text-5xl font-semibold text-accent-d leading-tight tracking-wide truncate">–</p>
+        <div id="photoGrid" class="mt-3 grid gap-2"></div>
+        <input type="file" id="fileInput" accept="image/*" capture="environment" class="hidden">
+      </div>
+
+      <!-- ชั้น -->
+      <div class="bg-card rounded-[24px] shadow-soft py-4 fade-in">
+        <div class="px-4 flex items-center gap-2.5"><span data-i="layers" class="bub"></span><span class="font-medium">ชั้น</span></div>
+        <div id="floorChips" class="mt-3 px-4 flex gap-2 overflow-x-auto no-scrollbar">
+          <input id="inpFloor" type="text" maxlength="10" placeholder="อื่นๆ" aria-label="พิมพ์ชั้นเอง"
+            class="order-last shrink-0 w-[72px] h-12 rounded-2xl bg-field text-center text-base font-medium border border-transparent focus:border-accent placeholder:text-ink-3 placeholder:font-normal">
         </div>
       </div>
-      <p id="outNote" class="text-sm text-ink-2 mt-2.5 px-1 break-words"></p>
-      <p id="emptyHint" class="hidden text-sm text-ink-3 text-center py-4">ไม่ได้จดรายละเอียดไว้ กด ✏️ แก้ไข เพื่อเพิ่ม</p>
+
+      <!-- โซน / เสา -->
+      <div class="bg-card rounded-[24px] shadow-soft py-4 fade-in">
+        <div class="px-4 flex items-center justify-between">
+          <div class="flex items-center gap-2.5"><span data-i="hash" class="bub"></span><span class="font-medium">โซน / เสา</span></div>
+          <input id="inpZone" type="text" maxlength="30" placeholder="พิมพ์เอง" aria-label="โซนหรือเสา"
+            class="w-28 h-10 px-3 rounded-xl bg-field text-right text-xl font-semibold text-accent-d border border-transparent focus:border-accent placeholder:text-sm placeholder:font-normal placeholder:text-ink-3">
+        </div>
+        <div id="zoneLetters" class="mt-3 px-4 flex gap-2 overflow-x-auto no-scrollbar"></div>
+        <div id="zoneNums" class="mt-2 px-4 flex gap-2 overflow-x-auto no-scrollbar"></div>
+      </div>
+
+      <!-- ทางออก -->
+      <div class="bg-card rounded-[24px] shadow-soft p-4 fade-in">
+        <div class="flex items-center gap-2.5">
+          <span data-i="route" class="bub"></span>
+          <div class="leading-tight"><p class="font-medium">เดินออกทางไหน</p><p class="text-[11px] text-ink-3 font-light">ขากลับจะได้ย้อนทางเดิม</p></div>
+        </div>
+        <div id="exitChips" class="mt-3 grid grid-cols-4 gap-2"></div>
+        <input id="inpExit" type="text" maxlength="60" placeholder="ฝั่ง / จุดสังเกต เช่น ฝั่งโรงหนัง"
+          class="w-full mt-2 h-12 px-4 rounded-2xl bg-field border border-transparent focus:border-accent text-base placeholder:text-ink-3">
+      </div>
+
+      <!-- เพิ่มเติม -->
+      <div class="bg-card rounded-[24px] shadow-soft p-4 fade-in">
+        <div class="flex items-center gap-2.5"><span data-i="note" class="bub"></span><span class="font-medium">เพิ่มเติม</span></div>
+        <input id="inpNote" type="text" maxlength="120" placeholder="โน้ต เช่น จอดข้างรถตู้สีขาว"
+          class="w-full mt-3 h-12 px-4 rounded-2xl bg-field border border-transparent focus:border-accent text-base placeholder:text-ink-3">
+        <label class="mt-3 flex items-center justify-between gap-3 cursor-pointer select-none">
+          <span class="leading-tight">
+            <span id="gpsLabel" class="text-sm">บันทึกพิกัด GPS</span>
+            <span class="block text-[11px] text-ink-3 font-light">นำทางได้เฉพาะที่จอดกลางแจ้ง</span>
+          </span>
+          <input id="chkGps" type="checkbox" checked class="sr-only peer">
+          <span class="relative shrink-0 w-12 h-7 rounded-full bg-line peer-checked:bg-accent transition-colors
+            after:content-[''] after:absolute after:top-1 after:left-1 after:w-5 after:h-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"></span>
+        </label>
+      </div>
     </div>
 
-    <div id="photoBox" class="mt-3">
-      <div id="photoTrack" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar rounded-3xl bg-black"></div>
-      <div id="photoDots" class="flex justify-center gap-1.5 mt-2"></div>
-    </div>
+    <p class="text-center text-[11px] text-ink-3 font-light mt-5 flex items-center justify-center gap-1"><span data-i="lock" data-s="w-3.5 h-3.5"></span> ข้อมูลเก็บไว้ในเครื่องคุณเท่านั้น</p>
+    <p id="installHint" class="hidden text-center text-[11px] text-ink-3 font-light mt-2 px-6"></p>
   </section>
 
-  <p id="installHint" class="hidden text-center text-[11px] text-ink-3 font-light mt-6 px-4"></p>
+  <!-- ================= GUIDE : พาไปหารถ ================= -->
+  <section id="viewParked" class="hidden">
+    <!-- ตั๋วที่จอด -->
+    <div id="ticket" class="grad relative overflow-hidden rounded-[28px] p-5 text-white shadow-glow fade-in">
+      <div class="pointer-events-none absolute -right-16 -top-20 w-56 h-56 rounded-full bg-white/10"></div>
+      <div class="pointer-events-none absolute -left-10 -bottom-24 w-48 h-48 rounded-full bg-white/5"></div>
+
+      <div class="relative flex items-center justify-between gap-2">
+        <span class="inline-flex items-center gap-1.5 bg-white/15 rounded-full pl-2 pr-3 py-1 text-sm">
+          <span data-i="clock" data-s="w-4 h-4"></span> จอดมาแล้ว <b id="outElapsed" class="font-semibold">-</b>
+        </span>
+        <span id="outTime" class="text-xs text-white/75">-</span>
+      </div>
+
+      <div id="rowExit" class="relative mt-4 flex items-center gap-3 bg-white/[.13] rounded-2xl px-3 py-2.5">
+        <span id="numExit" class="w-6 h-6 shrink-0 rounded-full bg-white text-emerald-700 flex items-center justify-center text-xs font-bold">1</span>
+        <span id="icoExit" class="shrink-0"></span>
+        <div class="min-w-0 leading-tight">
+          <p class="text-[11px] text-white/70">กลับทางเดิม</p>
+          <p id="outExit" class="text-lg font-semibold break-words"></p>
+        </div>
+      </div>
+
+      <div id="rowTiles" class="relative mt-4 grid grid-cols-2">
+        <div class="pr-3">
+          <p class="flex items-center gap-1.5 text-xs text-white/75">
+            <span id="numFloor" class="w-5 h-5 rounded-full bg-white text-emerald-700 flex items-center justify-center text-[11px] font-bold">2</span> ชั้น
+          </p>
+          <p id="outFloor" class="text-[64px] font-semibold leading-[1.05] tracking-tight truncate">–</p>
+        </div>
+        <div class="pl-4 border-l border-white/20">
+          <p class="flex items-center gap-1.5 text-xs text-white/75">
+            <span id="numZone" class="w-5 h-5 rounded-full bg-white text-emerald-700 flex items-center justify-center text-[11px] font-bold">3</span> โซน / เสา
+          </p>
+          <p id="outZone" class="text-[64px] font-semibold leading-[1.05] tracking-tight truncate">–</p>
+        </div>
+      </div>
+      <p id="emptyHint" class="hidden relative mt-4 text-sm text-white/85">ยังไม่ได้จดรายละเอียด กด “แก้ไข” เพื่อเพิ่ม</p>
+    </div>
+
+    <div id="noteRow" class="mt-3 bg-card rounded-2xl shadow-soft px-4 py-3 flex items-start gap-2.5 fade-in">
+      <span data-i="note" data-s="w-5 h-5 text-ink-3 mt-0.5"></span>
+      <p id="outNote" class="text-[15px] break-words min-w-0"></p>
+    </div>
+
+    <div id="photoBox" class="mt-3 fade-in">
+      <div class="relative">
+        <div id="photoTrack" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar rounded-[28px] bg-neutral-900"></div>
+        <span id="photoCounter" class="absolute top-3 right-3 text-xs text-white bg-black/50 backdrop-blur rounded-full px-2.5 py-1"></span>
+      </div>
+      <div id="photoDots" class="flex justify-center gap-1.5 mt-2.5"></div>
+    </div>
+  </section>
 </main>
 
-<!-- ====== BOTTOM BAR : หน้าจอดแล้ว (โซนนิ้วโป้ง) ====== -->
-<div id="barParked" class="hidden fixed bottom-0 inset-x-0 z-30 bg-page/95 backdrop-blur border-t border-line">
+<!-- ====== BOTTOM BAR : จอดแล้ว ====== -->
+<div id="barParked" class="hidden fixed bottom-0 inset-x-0 z-30 glass border-t border-line/70">
   <div class="max-w-md mx-auto px-4 pt-3" style="padding-bottom:max(10px, env(safe-area-inset-bottom))">
-    <div class="grid grid-cols-3 gap-2">
-      <button id="btnNav" class="press py-2.5 rounded-2xl bg-card border border-line shadow-soft flex flex-col items-center">
-        <span class="text-xl leading-none">📍</span><span id="navLabel" class="text-xs text-ink-2 mt-1">นำทาง GPS</span>
+    <div class="flex gap-2">
+      <button id="btnNav" class="press w-[60px] h-14 rounded-2xl bg-card shadow-soft flex flex-col items-center justify-center gap-0.5 text-ink-2" aria-label="นำทางด้วย GPS">
+        <span data-i="nav" data-s="w-5 h-5"></span><span id="navLabel" class="text-[10px]">นำทาง</span>
       </button>
-      <button id="btnShare" class="press py-2.5 rounded-2xl bg-card border border-line shadow-soft flex flex-col items-center">
-        <span class="text-xl leading-none">💬</span><span class="text-xs text-ink-2 mt-1">แชร์</span>
+      <button id="btnShare" class="press w-[60px] h-14 rounded-2xl bg-card shadow-soft flex flex-col items-center justify-center gap-0.5 text-ink-2" aria-label="แชร์">
+        <span data-i="share" data-s="w-5 h-5"></span><span class="text-[10px]">แชร์</span>
       </button>
-      <button id="btnEdit" class="press py-2.5 rounded-2xl bg-card border border-line shadow-soft flex flex-col items-center">
-        <span class="text-xl leading-none">✏️</span><span class="text-xs text-ink-2 mt-1">แก้ไข</span>
+      <button id="btnEdit" class="press w-[60px] h-14 rounded-2xl bg-card shadow-soft flex flex-col items-center justify-center gap-0.5 text-ink-2" aria-label="แก้ไข">
+        <span data-i="pencil" data-s="w-5 h-5"></span><span class="text-[10px]">แก้ไข</span>
+      </button>
+      <button id="btnReset" class="press flex-1 h-14 rounded-2xl grad text-white text-[17px] font-medium shadow-glow flex items-center justify-center gap-2">
+        <span data-i="check" data-s="w-5 h-5"></span> เจอรถแล้ว
       </button>
     </div>
-    <button id="btnReset" class="press w-full mt-2 py-4 rounded-2xl bg-accent hover:bg-accent-d text-white text-lg font-medium shadow-soft">
-      ✅ เจอรถแล้ว
-    </button>
-    <p class="appVersion text-center text-[10px] text-ink-3 font-light mt-1"></p>
+    <p class="appVersion text-center text-[10px] text-ink-3 font-light mt-1.5"></p>
   </div>
 </div>
 
 <!-- ====== BOTTOM BAR : ฟอร์ม ====== -->
-<div id="barForm" class="hidden fixed bottom-0 inset-x-0 z-30 bg-page/95 backdrop-blur border-t border-line">
+<div id="barForm" class="hidden fixed bottom-0 inset-x-0 z-30 glass border-t border-line/70">
   <div class="max-w-md mx-auto px-4 pt-3" style="padding-bottom:max(10px, env(safe-area-inset-bottom))">
     <div class="flex gap-2">
-      <button id="btnCancelEdit" class="hidden press px-5 py-4 rounded-2xl bg-card text-ink-2 font-medium border border-line">ยกเลิก</button>
-      <button id="btnSave" class="press flex-1 py-4 rounded-2xl bg-accent hover:bg-accent-d text-white text-lg font-medium shadow-soft flex items-center justify-center gap-2">
+      <button id="btnCancelEdit" class="hidden press w-14 h-14 rounded-2xl bg-card shadow-soft flex items-center justify-center text-ink-2" aria-label="ยกเลิก">
+        <span data-i="x" data-s="w-5 h-5"></span>
+      </button>
+      <button id="btnSave" class="press flex-1 h-14 rounded-2xl grad text-white shadow-glow flex items-center justify-center gap-2 px-4">
         <span id="saveSpinner" class="hidden w-5 h-5 rounded-full border-2 border-white/40 border-t-white animate-spin"></span>
-        <span id="saveLabel">บันทึกจุดจอดรถ</span>
+        <span id="saveIcon" data-i="check" data-s="w-5 h-5"></span>
+        <span id="saveLabel" class="text-[17px] font-medium">บันทึกที่จอด</span>
+        <span id="saveSummary" class="hidden text-sm bg-white/20 rounded-full px-2.5 py-0.5 font-medium truncate max-w-[45%]"></span>
       </button>
     </div>
-    <p class="appVersion text-center text-[10px] text-ink-3 font-light mt-1"></p>
+    <p class="appVersion text-center text-[10px] text-ink-3 font-light mt-1.5"></p>
   </div>
 </div>
 
-<!-- ====== CONFIRM MODAL ====== -->
+<!-- ====== CONFIRM SHEET ====== -->
 <div id="modal" class="hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm items-end sm:items-center justify-center">
-  <div class="bg-card w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6 fade-in" style="padding-bottom:max(24px, env(safe-area-inset-bottom))">
-    <h3 class="text-lg font-medium text-center">เจอรถแล้วใช่ไหม? 🚗</h3>
+  <div class="bg-card w-full sm:max-w-sm rounded-t-[28px] sm:rounded-[28px] p-6 pt-3 fade-in" style="padding-bottom:max(22px, env(safe-area-inset-bottom))">
+    <div class="mx-auto w-10 h-1 rounded-full bg-line mb-5 sm:hidden"></div>
+    <div class="mx-auto w-16 h-16 rounded-full grad text-white flex items-center justify-center shadow-glow"><span data-i="car" data-s="w-8 h-8"></span></div>
+    <h3 class="text-xl font-semibold text-center mt-4">เจอรถแล้วใช่ไหม?</h3>
     <p class="text-sm text-ink-3 font-light text-center mt-1">ข้อมูลที่จอดและรูปจะถูกลบ พร้อมจดที่ใหม่ครั้งหน้า</p>
-    <div class="grid grid-cols-2 gap-3 mt-6">
-      <button id="modalCancel" class="press py-4 rounded-2xl bg-field text-ink-2 font-medium">ยังไม่เจอ</button>
-      <button id="modalOk" class="press py-4 rounded-2xl bg-accent text-white font-medium">เจอแล้ว ลบเลย</button>
+    <div class="grid grid-cols-2 gap-2 mt-6">
+      <button id="modalCancel" class="press h-14 rounded-2xl bg-field text-ink-2 font-medium">ยังไม่เจอ</button>
+      <button id="modalOk" class="press h-14 rounded-2xl grad text-white font-medium shadow-glow">เจอแล้ว ลบเลย</button>
     </div>
   </div>
 </div>
 
 <!-- ====== PHOTO VIEWER / PIN EDITOR ====== -->
 <div id="viewer" class="hidden fixed inset-0 z-50 bg-black flex-col">
-  <div class="flex items-center justify-between px-4 pt-4 pb-2 text-white">
-    <p id="viewerHint" class="text-sm font-light"></p>
-    <button id="vClose" class="w-10 h-10 rounded-full bg-white/10 text-2xl leading-none">×</button>
+  <div class="flex items-center justify-between px-4 pb-2 text-white" style="padding-top:max(14px, env(safe-area-inset-top))">
+    <p id="viewerHint" class="text-sm text-white/85"></p>
+    <button id="vClose" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center" aria-label="ปิด"><span data-i="x" data-s="w-5 h-5"></span></button>
   </div>
   <div class="flex-1 flex items-center justify-center overflow-hidden px-2">
     <div id="viewerWrap" class="relative inline-block">
-      <img id="viewerImg" class="block max-w-full max-h-[72vh] w-auto h-auto select-none" alt="" draggable="false">
-      <span id="viewerPin" class="pin hidden text-4xl">📍</span>
+      <img id="viewerImg" class="block max-w-full max-h-[72vh] w-auto h-auto select-none rounded-xl" alt="" draggable="false">
+      <span id="viewerPin" class="pin hidden"><span class="ring"></span><span class="drop"></span></span>
     </div>
   </div>
-  <div class="p-4" style="padding-bottom:max(20px, env(safe-area-inset-bottom))">
+  <div class="p-4" style="padding-bottom:max(18px, env(safe-area-inset-bottom))">
     <div id="viewerActions" class="grid grid-cols-3 gap-2">
-      <button id="vDelete" class="press py-4 rounded-2xl bg-white/10 text-red-300 text-sm font-medium">🗑️ ลบรูป</button>
-      <button id="vClearPin" class="press py-4 rounded-2xl bg-white/10 text-white text-sm font-medium">ล้างหมุด</button>
-      <button id="vDone" class="press py-4 rounded-2xl bg-accent text-white text-sm font-medium">เสร็จ</button>
+      <button id="vDelete" class="press h-14 rounded-2xl bg-white/10 text-red-300 text-sm font-medium flex items-center justify-center gap-1.5"><span data-i="trash" data-s="w-4 h-4"></span> ลบรูป</button>
+      <button id="vClearPin" class="press h-14 rounded-2xl bg-white/10 text-white text-sm font-medium">ล้างหมุด</button>
+      <button id="vDone" class="press h-14 rounded-2xl grad text-white text-sm font-medium flex items-center justify-center gap-1.5"><span data-i="check" data-s="w-4 h-4"></span> เสร็จ</button>
     </div>
     <div id="viewerNav" class="grid grid-cols-3 gap-2">
-      <button id="vPrev" class="press py-4 rounded-2xl bg-white/10 text-white text-sm font-medium">‹ ก่อนหน้า</button>
-      <button id="vBack" class="press py-4 rounded-2xl bg-accent text-white text-sm font-medium">ปิด</button>
-      <button id="vNext" class="press py-4 rounded-2xl bg-white/10 text-white text-sm font-medium">ถัดไป ›</button>
+      <button id="vPrev" class="press h-14 rounded-2xl bg-white/10 text-white flex items-center justify-center" aria-label="รูปก่อนหน้า"><span data-i="left" data-s="w-6 h-6"></span></button>
+      <button id="vBack" class="press h-14 rounded-2xl grad text-white text-sm font-medium">ปิด</button>
+      <button id="vNext" class="press h-14 rounded-2xl bg-white/10 text-white flex items-center justify-center" aria-label="รูปถัดไป"><span data-i="right" data-s="w-6 h-6"></span></button>
     </div>
   </div>
 </div>
@@ -285,24 +333,73 @@ tailwind.config = {
 'use strict';
 
 /** 🏷️ เวอร์ชันแอป — เปลี่ยนทุกครั้งที่ปล่อยของใหม่ (และแก้ VERSION ใน sw.js ให้ตรงกัน) */
-const APP_VERSION = '2.2.0';
-
+const APP_VERSION = '2.3.0';
 
 const KEY = 'pooklok_parking_v2';
 const OLD_KEY = 'pooklok_parking_v1';
 const MAX_PHOTOS = 3;
-const FLOORS = ['B3', 'B2', 'B1', 'G', 'M', '1', '2', '3', '4', '5'];
+const FLOORS = ['B3', 'B2', 'B1', 'G', 'M', '1', '2', '3', '4', '5', '6'];
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K'];
 const NUMS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 const EXITS = [
-  { id: 'lift',      icon: '🛗', label: 'ลิฟต์' },
-  { id: 'escalator', icon: '↗️', label: 'บันไดเลื่อน' },
-  { id: 'stairs',    icon: '🪜', label: 'บันได' },
-  { id: 'door',      icon: '🚪', label: 'ประตู / ทางเดิน' }
+  { id: 'lift',      icon: 'lift',      label: 'ลิฟต์' },
+  { id: 'escalator', icon: 'escalator', label: 'บันไดเลื่อน' },
+  { id: 'stairs',    icon: 'stairs',    label: 'บันได' },
+  { id: 'door',      icon: 'door',      label: 'ประตู' }
 ];
 const PHOTO_HINTS = ['ป้ายเสา', 'ตัวรถ', 'ทางออก'];
 
+/* ---------- Icons (เส้นแบบ Lucide) ---------- */
+const ICONS = {
+  camera: '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+  layers: '<path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/>',
+  hash: '<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>',
+  route: '<circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/>',
+  note: '<path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5z"/><path d="M15 3v6h6"/>',
+  lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  nav: '<path d="m3 11 19-9-9 19-2-8z"/>',
+  share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>',
+  pencil: '<path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  left: '<path d="m15 18-6-6 6-6"/>',
+  right: '<path d="m9 18 6-6-6-6"/>',
+  trash: '<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  pin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+  car: '<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>',
+  lift: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="m9 9 3-3 3 3M9 15l3 3 3-3"/>',
+  escalator: '<path d="M3 19h4l9-12h5"/><path d="M7 19h3l9-12"/><circle cx="12" cy="5" r="1.5"/>',
+  stairs: '<path d="M3 21h5v-5h5v-5h5V6h3"/>',
+  door: '<path d="M14 4h3a1 1 0 0 1 1 1v15M3 20h18"/><path d="M14 4.5V20l-8-1.5V5.8a1 1 0 0 1 .8-1l6-1.2a1 1 0 0 1 1.2 1z"/><path d="M11 12v.01"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/>',
+  alert: '<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>'
+};
+function icon(name, cls = 'w-5 h-5') {
+  return `<svg class="ico ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
+}
+// เติมไอคอนให้ทุก element ที่มี data-i
+function hydrateIcons(root = document) {
+  root.querySelectorAll('[data-i]').forEach((n) => {
+    if (n.classList.contains('bub')) {
+      n.className = 'w-8 h-8 rounded-xl bg-accent-soft text-accent-d flex items-center justify-center';
+      n.innerHTML = icon(n.dataset.i, 'w-[18px] h-[18px]');
+    } else {
+      n.innerHTML = icon(n.dataset.i, n.dataset.s || 'w-5 h-5');
+      n.classList.add('inline-flex');
+    }
+    n.removeAttribute('data-i');
+  });
+}
+
 const $ = (id) => document.getElementById(id);
+const buzz = () => {
+  try {
+    const ua = navigator.userActivation;
+    if (navigator.vibrate && (!ua || ua.hasBeenActive)) navigator.vibrate(8);
+  } catch (e) { /* ไม่รองรับ */ }
+};
 
 let form = { photos: [], exitType: '' }; // สถานะฟอร์มที่ยังไม่บันทึก
 let editing = false;
@@ -319,9 +416,11 @@ function el(tag, cls, text) {
 
 function toast(msg, type = 'info') {
   const box = $('toastBox');
-  box.textContent = msg;
-  box.className = 'px-5 py-3 rounded-2xl shadow-soft text-sm text-white text-center backdrop-blur ' +
+  const ic = type === 'error' ? 'alert' : type === 'success' ? 'check' : 'info';
+  box.className = 'pop flex items-center gap-2 pl-3 pr-4 py-2.5 rounded-full shadow-soft text-sm text-white backdrop-blur ' +
     (type === 'error' ? 'bg-red-500/95' : type === 'success' ? 'bg-emerald-600/95' : 'bg-neutral-900/90');
+  box.innerHTML = icon(ic, 'w-4 h-4');
+  box.appendChild(el('span', '', msg));
   const t = $('toast');
   t.classList.remove('hidden');
   clearTimeout(toast._t);
@@ -332,8 +431,8 @@ const pad = (n) => String(n).padStart(2, '0');
 
 function fmtDateTime(ts) {
   const d = new Date(ts);
-  const days = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
-  return `${days[d.getDay()]} ${d.getDate()}/${d.getMonth()+1} • ${pad(d.getHours())}:${pad(d.getMinutes())} น.`;
+  const days = ['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'];
+  return `${days[d.getDay()]} ${d.getDate()}/${d.getMonth()+1} · ${pad(d.getHours())}:${pad(d.getMinutes())} น.`;
 }
 
 function fmtElapsed(ts) {
@@ -345,6 +444,15 @@ function fmtElapsed(ts) {
 }
 
 const exitInfo = (id) => EXITS.find((x) => x.id === id);
+
+function pinEl(pin) {
+  const p = el('span', 'pin');
+  p.appendChild(el('span', 'ring'));
+  p.appendChild(el('span', 'drop'));
+  p.style.left = (pin.x * 100) + '%';
+  p.style.top = (pin.y * 100) + '%';
+  return p;
+}
 
 /* ---------- Storage ---------- */
 function normalize(d) {
@@ -445,24 +553,25 @@ function getPosition(timeout = 10000) {
 }
 
 /* ---------- Form: chips ---------- */
-const chipCls = 'chip press py-2.5 rounded-xl bg-field border border-line text-ink-2 text-sm font-medium';
+const pillCls = 'pill press shrink-0 h-12 min-w-[48px] px-4 rounded-2xl text-base font-medium';
 
 function buildChips() {
   const fc = $('floorChips');
   FLOORS.forEach((f) => {
-    const b = el('button', chipCls, f);
+    const b = el('button', pillCls, f);
     b.type = 'button'; b.dataset.v = f;
     b.addEventListener('click', () => {
-      $('inpFloor').value = ($('inpFloor').value === f) ? '' : f;
+      buzz();
+      $('inpFloor').value = ($('inpFloor').value.toUpperCase() === f) ? '' : f;
       syncChips();
     });
-    fc.appendChild(b);
+    fc.insertBefore(b, $('inpFloor'));
   });
 
   const mk = (wrap, list, onTap) => list.forEach((t) => {
-    const b = el('button', chipCls + ' shrink-0 min-w-[44px] px-3', t);
+    const b = el('button', pillCls.replace('h-12', 'h-11').replace('px-4', 'px-3'), t);
     b.type = 'button'; b.dataset.v = t;
-    b.addEventListener('click', () => { onTap(t); syncChips(); });
+    b.addEventListener('click', () => { buzz(); onTap(t); syncChips(); });
     wrap.appendChild(b);
   });
   // ตัวอักษร: แทนที่ส่วนตัวอักษรนำหน้า, ตัวเลข: แทนที่ส่วนตัวเลขท้าย
@@ -477,9 +586,12 @@ function buildChips() {
 
   const ec = $('exitChips');
   EXITS.forEach((x) => {
-    const b = el('button', chipCls + ' px-2', `${x.icon} ${x.label}`);
+    const b = el('button', 'tile press h-[74px] rounded-2xl bg-field border border-transparent text-ink-2 flex flex-col items-center justify-center gap-1');
     b.type = 'button'; b.dataset.v = x.id;
+    b.innerHTML = icon(x.icon, 'w-6 h-6');
+    b.appendChild(el('span', 'text-xs font-medium', x.label));
     b.addEventListener('click', () => {
+      buzz();
       form.exitType = (form.exitType === x.id) ? '' : x.id;
       syncChips();
     });
@@ -495,39 +607,66 @@ function splitZone(s) {
 function syncChips() {
   const floor = $('inpFloor').value.trim().toUpperCase();
   $('floorChips').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === floor));
+  const custom = floor && !FLOORS.includes(floor);
+  $('inpFloor').classList.toggle('border-accent', !!custom);
   const { letter, num } = splitZone($('inpZone').value);
   $('zoneLetters').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === letter));
   $('zoneNums').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === num));
   $('exitChips').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === form.exitType));
+  updateSummary();
+}
+
+// โชว์สรุปบนปุ่มบันทึก ให้เห็นก่อนกด
+function updateSummary() {
+  const parts = [$('inpFloor').value.trim().toUpperCase(), $('inpZone').value.trim().toUpperCase()].filter(Boolean);
+  $('saveSummary').textContent = parts.join(' · ');
+  $('saveSummary').classList.toggle('hidden', !parts.length);
 }
 
 /* ---------- Form: photos ---------- */
 function renderPhotoGrid() {
   const g = $('photoGrid');
   g.replaceChildren();
+  const n = form.photos.length;
+  $('photoCount').textContent = n ? `${n}/${MAX_PHOTOS} · แตะรูปเพื่อปักหมุด` : '';
+
+  if (!n) {
+    g.className = 'mt-3 grid gap-2 grid-cols-1';
+    const b = el('button', 'press h-32 rounded-2xl border-2 border-dashed border-accent/40 bg-accent-soft/40 flex flex-col items-center justify-center gap-2');
+    b.type = 'button';
+    const c = el('span', 'w-12 h-12 rounded-full grad text-white flex items-center justify-center shadow-glow');
+    c.innerHTML = icon('camera', 'w-6 h-6');
+    b.appendChild(c);
+    b.appendChild(el('span', 'text-sm font-medium text-accent-d', 'ถ่ายรูปป้ายเสา / ตัวรถ'));
+    b.addEventListener('click', () => $('fileInput').click());
+    g.appendChild(b);
+    return;
+  }
+
+  g.className = 'mt-3 grid gap-2 grid-cols-3';
   for (let i = 0; i < MAX_PHOTOS; i++) {
     const p = form.photos[i];
-    const cell = el('button', 'press relative aspect-square rounded-2xl overflow-hidden ' +
-      (p ? 'bg-black' : 'bg-field border-2 border-dashed border-line2 flex flex-col items-center justify-center'));
-    cell.type = 'button';
     if (p) {
+      const cell = el('button', 'press relative aspect-square rounded-2xl overflow-hidden bg-neutral-900');
+      cell.type = 'button';
       const img = el('img', 'absolute inset-0 w-full h-full object-cover');
       img.src = p.src; img.alt = `รูปที่ ${i + 1}`;
       cell.appendChild(img);
-      cell.appendChild(el('span',
-        'absolute bottom-1 left-1 right-1 text-[10px] rounded-lg py-0.5 text-white ' + (p.pin ? 'bg-red-500/85' : 'bg-black/55'),
-        p.pin ? '📍 ปักหมุดแล้ว' : 'แตะเพื่อปักหมุด'));
+      const badge = el('span', 'absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-center gap-1 text-[10px] rounded-full py-0.5 text-white backdrop-blur ' +
+        (p.pin ? 'bg-red-500/90' : 'bg-black/55'));
+      badge.innerHTML = icon(p.pin ? 'pin' : 'plus', 'w-3 h-3');
+      badge.appendChild(el('span', '', p.pin ? 'ปักหมุดแล้ว' : 'ปักหมุด'));
+      cell.appendChild(badge);
       cell.addEventListener('click', () => openViewer('edit', form.photos, i));
-    } else if (i === form.photos.length) {
-      cell.appendChild(el('span', 'text-2xl', '📷'));
-      cell.appendChild(el('span', 'text-[11px] text-ink-3 mt-0.5', PHOTO_HINTS[i] || 'เพิ่มรูป'));
+      g.appendChild(cell);
+    } else if (i === n) {
+      const cell = el('button', 'press aspect-square rounded-2xl border-2 border-dashed border-line bg-field flex flex-col items-center justify-center gap-1 text-ink-3');
+      cell.type = 'button';
+      cell.innerHTML = icon('plus', 'w-6 h-6');
+      cell.appendChild(el('span', 'text-[11px]', PHOTO_HINTS[i] || 'เพิ่มรูป'));
       cell.addEventListener('click', () => $('fileInput').click());
-    } else {
-      cell.disabled = true;
-      cell.classList.add('opacity-40');
-      cell.appendChild(el('span', 'text-[11px] text-ink-3', PHOTO_HINTS[i] || ''));
+      g.appendChild(cell);
     }
-    g.appendChild(cell);
   }
 }
 
@@ -536,7 +675,7 @@ function openViewer(mode, photos, index) {
   viewer = { mode, photos, index };
   const p = photos[index];
   $('viewerImg').src = p.src;
-  $('viewerHint').textContent = mode === 'edit' ? 'แตะบนรูปตรงที่รถจอด เพื่อปักหมุด' : `รูปที่ ${index + 1} จาก ${photos.length}`;
+  $('viewerHint').textContent = mode === 'edit' ? 'แตะตรงที่รถจอด เพื่อปักหมุด' : `รูปที่ ${index + 1} / ${photos.length}`;
   $('viewerActions').classList.toggle('hidden', mode !== 'edit');
   $('viewerNav').classList.toggle('hidden', mode === 'edit');
   const multi = photos.length > 1;
@@ -549,11 +688,11 @@ function openViewer(mode, photos, index) {
 }
 
 function placeViewerPin(pin) {
-  const el2 = $('viewerPin');
-  if (!pin) { el2.classList.add('hidden'); return; }
-  el2.style.left = (pin.x * 100) + '%';
-  el2.style.top = (pin.y * 100) + '%';
-  el2.classList.remove('hidden');
+  const e = $('viewerPin');
+  if (!pin) { e.classList.add('hidden'); return; }
+  e.style.left = (pin.x * 100) + '%';
+  e.style.top = (pin.y * 100) + '%';
+  e.classList.remove('hidden');
 }
 
 function closeViewer() {
@@ -563,18 +702,19 @@ function closeViewer() {
   viewer = null;
 }
 
-/* ---------- Render ---------- */
+/* ---------- Render: ฟอร์ม ---------- */
 function showForm(prefill) {
   editing = !!prefill;
   $('viewParked').classList.add('hidden');
   $('barParked').classList.add('hidden');
+  $('headStatus').classList.add('hidden');
   $('viewForm').classList.remove('hidden');
   $('barForm').classList.remove('hidden');
   $('installHint').classList.toggle('hidden', !$('installHint').textContent);
-  $('introCard').classList.toggle('hidden', editing);
-  $('editTitle').classList.toggle('hidden', !editing);
+  $('formTitle').textContent = editing ? 'แก้ไขที่จอด' : 'จอดตรงไหน?';
+  $('formSub').textContent = editing ? 'แก้แล้วกดบันทึกด้านล่าง' : 'แตะเลือกไม่กี่ที ขากลับไม่หลง';
   $('btnCancelEdit').classList.toggle('hidden', !editing);
-  $('saveLabel').textContent = editing ? 'บันทึกการแก้ไข' : 'บันทึกจุดจอดรถ';
+  $('saveLabel').textContent = editing ? 'บันทึกการแก้ไข' : 'บันทึกที่จอด';
   stopTimer();
 
   const d = prefill || {};
@@ -586,51 +726,58 @@ function showForm(prefill) {
     exitType: d.exitType || '',
     photos: (d.photos || []).map((p) => ({ src: p.src, pin: p.pin ? { ...p.pin } : null }))
   };
-  // ตอนแก้ไข: เก็บพิกัดเดิมไว้ เว้นแต่ติ๊กให้หาใหม่
+  // ตอนแก้ไข: เก็บพิกัดเดิมไว้ เว้นแต่เปิดให้หาใหม่
   $('chkGps').checked = !editing;
-  $('gpsLabel').textContent = editing ? (d.gps ? 'อัปเดตพิกัด GPS ใหม่' : 'บันทึกพิกัด GPS') : 'บันทึกพิกัด GPS';
+  $('gpsLabel').textContent = editing && d.gps ? 'อัปเดตพิกัด GPS ใหม่' : 'บันทึกพิกัด GPS';
   syncChips();
   renderPhotoGrid();
+  $('floorChips').scrollLeft = 0;
+  requestAnimationFrame(fitBottomSpace);
   window.scrollTo({ top: 0 });
 }
 
+/* ---------- Render: พาไปหารถ ---------- */
 function photoSlide(p, i, photos) {
-  const slide = el('div', 'snap-center shrink-0 w-full flex items-center justify-center py-2');
-  slide.style.height = 'var(--photoH)';
+  const slide = el('div', 'snap-center shrink-0 w-full flex items-center justify-center p-2');
+  slide.style.height = 'var(--photoH, 300px)';
   const wrap = el('button', 'relative inline-block');
   wrap.type = 'button';
-  const img = el('img', 'block max-w-full w-auto h-auto rounded-xl');
-  img.style.maxHeight = 'calc(var(--photoH) - 16px)';
+  const img = el('img', 'block max-w-full w-auto h-auto rounded-[20px]');
+  img.style.maxHeight = 'calc(var(--photoH, 300px) - 16px)';
   img.src = p.src; img.alt = `รูปที่ ${i + 1}`;
   wrap.appendChild(img);
-  if (p.pin) {
-    const pin = el('span', 'pin text-3xl', '📍');
-    pin.style.left = (p.pin.x * 100) + '%';
-    pin.style.top = (p.pin.y * 100) + '%';
-    wrap.appendChild(pin);
-  }
+  if (p.pin) wrap.appendChild(pinEl(p.pin));
   wrap.addEventListener('click', () => openViewer('view', photos, i));
   slide.appendChild(wrap);
   return slide;
 }
 
 // ให้รูปกินพื้นที่ที่เหลือพอดีจอ ไม่ต้องเลื่อน
+function fitBottomSpace() {
+  const bar = !$('barParked').classList.contains('hidden') ? $('barParked') : $('barForm');
+  $('main').style.paddingBottom = (bar.offsetHeight + 12) + 'px';
+}
+
 function fitPhotoHeight() {
+  fitBottomSpace();
   const box = $('photoBox');
   if ($('viewParked').classList.contains('hidden') || box.classList.contains('hidden')) return;
   const top = box.getBoundingClientRect().top + window.scrollY;
-  const bar = $('barParked').offsetHeight || 150;
-  const dots = $('photoDots').offsetHeight + 8;
-  const h = Math.max(180, Math.floor(window.innerHeight - top - bar - dots - 12));
+  const bar = $('barParked').offsetHeight || 110;
+  const dots = $('photoDots').offsetHeight + 10;
+  const h = Math.max(150, Math.floor(window.innerHeight - top - bar - dots - 14));
   document.documentElement.style.setProperty('--photoH', h + 'px');
 }
 
 function updateDots() {
   const t = $('photoTrack');
-  const i = Math.round(t.scrollLeft / Math.max(1, t.clientWidth));
+  const n = t.children.length;
+  const i = Math.min(n - 1, Math.round(t.scrollLeft / Math.max(1, t.clientWidth)));
   [...$('photoDots').children].forEach((d, k) => {
-    d.className = 'h-1.5 rounded-full transition-all ' + (k === i ? 'w-5 bg-accent' : 'w-1.5 bg-line2');
+    d.className = 'h-1.5 rounded-full transition-all duration-300 ' + (k === i ? 'w-6 bg-accent' : 'w-1.5 bg-line');
   });
+  $('photoCounter').textContent = n > 1 ? `${i + 1}/${n}` : '';
+  $('photoCounter').classList.toggle('hidden', n < 2);
 }
 
 function showParked(d) {
@@ -639,14 +786,20 @@ function showParked(d) {
   $('installHint').classList.add('hidden');
   $('viewParked').classList.remove('hidden');
   $('barParked').classList.remove('hidden');
+  $('headStatus').classList.remove('hidden');
+  $('headStatus').classList.add('inline-flex');
   $('outTime').textContent = fmtDateTime(d.savedAt);
 
-  // ลำดับขั้นตอน: ทางเดิม → ชั้น → โซน
+  // ลำดับ: ทางเดิม → ชั้น → โซน
   const ex = exitInfo(d.exitType);
-  const exitText = [ex && `${ex.icon} ${ex.label}`, d.exitNote].filter(Boolean).join(' · ');
+  const exitText = [ex && ex.label, d.exitNote].filter(Boolean).join(' · ');
   let n = 0;
   $('rowExit').classList.toggle('hidden', !exitText);
-  if (exitText) { $('numExit').textContent = ++n; $('outExit').textContent = exitText; }
+  if (exitText) {
+    $('numExit').textContent = ++n;
+    $('outExit').textContent = exitText;
+    $('icoExit').innerHTML = icon(ex ? ex.icon : 'route', 'w-6 h-6');
+  }
 
   const hasTiles = !!(d.floor || d.zone);
   $('rowTiles').classList.toggle('hidden', !hasTiles);
@@ -655,14 +808,19 @@ function showParked(d) {
     $('numZone').textContent = ++n;
     $('outFloor').textContent = d.floor || '–';
     $('outZone').textContent = d.zone || '–';
-    $('outFloor').classList.toggle('text-ink-3', !d.floor);
-    $('outZone').classList.toggle('text-ink-3', !d.zone);
+    $('outFloor').classList.toggle('opacity-40', !d.floor);
+    $('outZone').classList.toggle('opacity-40', !d.zone);
+    // ตัวหนังสือยาว → ย่อขนาดให้พอดี
+    [['outFloor', d.floor], ['outZone', d.zone]].forEach(([id, val]) => {
+      const len = (val || '').length;
+      $(id).style.fontSize = len > 6 ? '30px' : len > 4 ? '40px' : len > 3 ? '52px' : '';
+    });
   }
-  $('outNote').textContent = d.note ? `📝 ${d.note}` : '';
-  $('outNote').classList.toggle('hidden', !d.note);
-  $('emptyHint').classList.toggle('hidden', !!(exitText || hasTiles || d.note || d.photos.length));
+  $('outNote').textContent = d.note;
+  $('noteRow').classList.toggle('hidden', !d.note);
+  $('emptyHint').classList.toggle('hidden', !!(exitText || hasTiles));
 
-  // รูป: เลื่อนซ้าย-ขวาด้วยนิ้วโป้ง
+  // รูป: ปัดซ้าย-ขวา
   const track = $('photoTrack'), dots = $('photoDots');
   track.replaceChildren(); dots.replaceChildren();
   $('photoBox').classList.toggle('hidden', !d.photos.length);
@@ -676,7 +834,8 @@ function showParked(d) {
   const nav = $('btnNav');
   nav.disabled = !d.gps;
   nav.classList.toggle('opacity-40', !d.gps);
-  $('navLabel').textContent = d.gps ? `นำทาง ±${d.gps.acc}ม.` : 'ไม่มี GPS';
+  $('navLabel').textContent = d.gps ? 'นำทาง' : 'ไม่มี GPS';
+  nav.title = d.gps ? `เหมาะกับที่จอดกลางแจ้ง · ±${d.gps.acc} ม.` : '';
 
   startTimer(d.savedAt);
   window.scrollTo({ top: 0 });
@@ -696,7 +855,9 @@ async function handleSave() {
   const btn = $('btnSave');
   if (btn.disabled) return;
   btn.disabled = true;
+  buzz();
   $('saveSpinner').classList.remove('hidden');
+  $('saveIcon').classList.add('hidden');
   const label = $('saveLabel').textContent;
   $('saveLabel').textContent = 'กำลังบันทึก...';
 
@@ -724,23 +885,20 @@ async function handleSave() {
 
   if (saveData(data)) {
     showParked(loadData() || data);
-    toast(editing ? 'แก้ไขเรียบร้อย' : 'บันทึกจุดจอดเรียบร้อย 🎉', 'success');
+    toast(editing ? 'แก้ไขเรียบร้อย' : 'จดที่จอดแล้ว', 'success');
     editing = false;
   }
 
   btn.disabled = false;
   $('saveSpinner').classList.add('hidden');
+  $('saveIcon').classList.remove('hidden');
   $('saveLabel').textContent = label;
-}
-
-function openExternal(url) {
-  window.open(url, '_blank', 'noopener');
 }
 
 function handleNav() {
   const d = loadData();
-  if (!d || !d.gps) return toast('ไม่มีพิกัดสำหรับนำทาง', 'error');
-  openExternal(`https://www.google.com/maps/dir/?api=1&destination=${d.gps.lat},${d.gps.lng}&travelmode=walking`);
+  if (!d || !d.gps) return toast('ไม่ได้บันทึกพิกัด GPS ไว้', 'error');
+  window.open(`https://www.google.com/maps/dir/?api=1&destination=${d.gps.lat},${d.gps.lng}&travelmode=walking`, '_blank', 'noopener');
 }
 
 async function handleShare() {
@@ -759,20 +917,20 @@ async function handleShare() {
   ].filter(Boolean);
   const text = lines.join('\n');
 
-  // มือถือ: เปิดเมนูแชร์ของเครื่อง (เลือก LINE / แชทไหนก็ได้) · คอม: คัดลอกข้อความ
+  // มือถือ: เปิดเมนูแชร์ของเครื่อง · คอม: คัดลอกข้อความ
   if (navigator.share) {
     try { await navigator.share({ text }); return; }
     catch (e) { if (e.name === 'AbortError') return; }
   }
   try {
     await navigator.clipboard.writeText(text);
-    toast('คัดลอกข้อมูลแล้ว นำไปวางในแชทได้เลย', 'success');
+    toast('คัดลอกแล้ว นำไปวางในแชทได้เลย', 'success');
   } catch (e2) {
     toast('แชร์ไม่สำเร็จบนอุปกรณ์นี้', 'error');
   }
 }
 
-function openModal() { $('modal').classList.remove('hidden'); $('modal').classList.add('flex'); }
+function openModal() { buzz(); $('modal').classList.remove('hidden'); $('modal').classList.add('flex'); }
 function closeModal() { $('modal').classList.add('hidden'); $('modal').classList.remove('flex'); }
 
 /* ---------- Bind Events ---------- */
@@ -803,10 +961,10 @@ function bindEvents() {
     if (!viewer || viewer.mode !== 'edit') return;
     const r = e.currentTarget.getBoundingClientRect();
     const pin = {
-      x: Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)),
-      y: Math.min(1, Math.max(0, (e.clientY - r.top) / r.height))
+      x: +Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)).toFixed(4),
+      y: +Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)).toFixed(4)
     };
-    pin.x = +pin.x.toFixed(4); pin.y = +pin.y.toFixed(4);
+    buzz();
     viewer.photos[viewer.index].pin = pin;
     placeViewerPin(pin);
   });
@@ -827,7 +985,7 @@ function bindEvents() {
   window.addEventListener('resize', fitPhotoHeight);
 
   $('btnSave').addEventListener('click', handleSave);
-  $('btnCancelEdit').addEventListener('click', () => { const d = loadData(); d ? showParked(d) : showForm(); editing = false; });
+  $('btnCancelEdit').addEventListener('click', () => { const d = loadData(); editing = false; d ? showParked(d) : showForm(); });
   $('btnNav').addEventListener('click', handleNav);
   $('btnShare').addEventListener('click', handleShare);
   $('btnEdit').addEventListener('click', () => showForm(loadData()));
@@ -839,10 +997,11 @@ function bindEvents() {
     try { localStorage.removeItem(KEY); } catch (e) { console.warn(e); }
     closeModal();
     showForm();
-    toast('ล้างข้อมูลแล้ว ขับรถปลอดภัยนะ 👋', 'success');
+    toast('ล้างข้อมูลแล้ว ขับรถปลอดภัยนะ', 'success');
   });
 
   $('inpNote').addEventListener('keydown', (e) => { if (e.key === 'Enter') e.target.blur(); });
+  $('inpExit').addEventListener('keydown', (e) => { if (e.key === 'Enter') e.target.blur(); });
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { if (viewer) closeViewer(); else closeModal(); }
@@ -864,13 +1023,13 @@ function setupPwa() {
   }
   const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   if (!standalone) {
-    $('installHint').textContent = 'เคล็ดลับ: กด "เพิ่มลงหน้าจอโฮม" จากเมนูเบราว์เซอร์ จะเปิดได้แม้อยู่ชั้นใต้ดินไม่มีเน็ต';
-    $('installHint').classList.remove('hidden');
+    $('installHint').textContent = 'เคล็ดลับ: “เพิ่มลงหน้าจอโฮม” จากเมนูเบราว์เซอร์ จะเปิดได้แม้อยู่ใต้ดินไม่มีเน็ต';
   }
 }
 
 /* ---------- Boot ---------- */
-(async function boot() {
+(function boot() {
+  hydrateIcons();
   document.querySelectorAll('.appVersion').forEach((e) => { e.textContent = `ปุกป็อก v${APP_VERSION}`; });
   bindEvents();
   setupPwa();
