@@ -5,7 +5,7 @@
    ข้อมูลเก็บใน Workers KV (key: p:<chatId>), เจ้าของบอทคือคนแรกที่กด /start
    ============================================================ */
 
-const BOT_VERSION = '1.1.0';
+const BOT_VERSION = '1.2.0';
 
 const FLOORS = ['B3', 'B2', 'B1', 'G', '1', '2', '3', '4'];
 const EXITS = {
@@ -38,9 +38,28 @@ async function tg(env, method, body) {
   const res = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/${method}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body, (k, v) => (k === '__retried' ? undefined : v))
   });
   const json = await res.json();
+  // โดน rate limit → รอตามที่ Telegram บอก (ไม่เกิน 5 วิ) แล้วลองใหม่ 1 ครั้ง
+  if (!json.ok && json.error_code === 429 && !body.__retried) {
+    const wait = Math.min(5, (json.parameters && json.parameters.retry_after) || 1);
+    await new Promise((r) => setTimeout(r, wait * 1000));
+    return tg(env, method, { ...body, __retried: true });
+  }
+  if (!json.ok) console.warn(method, json.description);
+  return json;
+}
+
+// ส่งแบบ multipart (มีไฟล์) + รอแล้วลองใหม่ถ้าโดน rate limit
+async function tgForm(env, method, makeForm, retried = false) {
+  const res = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/${method}`, { method: 'POST', body: makeForm() });
+  const json = await res.json();
+  if (!json.ok && json.error_code === 429 && !retried) {
+    const wait = Math.min(5, (json.parameters && json.parameters.retry_after) || 1);
+    await new Promise((r) => setTimeout(r, wait * 1000));
+    return tgForm(env, method, makeForm, true);
+  }
   if (!json.ok) console.warn(method, json.description);
   return json;
 }
@@ -192,7 +211,7 @@ function cardKeyboard(s) {
 }
 
 // แก้การ์ดเดิมถ้าทำได้ ไม่งั้นส่งใหม่ + ปักหมุด
-async function renderCard(env, chatId, s, { resend = false } = {}) {
+async function renderCard(env, chatId, s, { resend = false, blob = null } = {}) {
   const hasPhoto = s.photos.length > 0;
   const type = hasPhoto ? 'photo' : 'text';
   const text = cardText(s);
@@ -214,16 +233,33 @@ async function renderCard(env, chatId, s, { resend = false } = {}) {
     if (r.ok || /not modified/i.test(r.description || '')) return;
   }
 
-  if (s.cardId) await tg(env, 'deleteMessage', { chat_id: chatId, message_id: s.cardId });
-  const r = hasPhoto
-    ? await tg(env, 'sendPhoto', { chat_id: chatId, photo: s.photos[0], caption: text, parse_mode: 'HTML', reply_markup })
-    : await tg(env, 'sendMessage', { chat_id: chatId, text, parse_mode: 'HTML', reply_markup });
+  // ลบการ์ดเก่า (หมุดหายไปพร้อมกัน) — ถ้าลบไม่ได้ (เก่าเกิน 48 ชม.) ค่อยปลดหมุดทั้งหมด
+  const del = s.cardId ? await tg(env, 'deleteMessage', { chat_id: chatId, message_id: s.cardId }) : { ok: true };
+  let r;
+  if (hasPhoto && blob) {
+    r = await tgForm(env, 'sendPhoto', () => {
+      const fd = new FormData();
+      fd.append('chat_id', String(chatId));
+      fd.append('photo', blob, 'photo.jpg');
+      fd.append('caption', text);
+      fd.append('parse_mode', 'HTML');
+      fd.append('reply_markup', JSON.stringify(reply_markup));
+      return fd;
+    });
+    if (r.ok) s.photos[0] = r.result.photo[r.result.photo.length - 1].file_id;
+  } else if (hasPhoto) {
+    r = await tg(env, 'sendPhoto', { chat_id: chatId, photo: s.photos[0], caption: text, parse_mode: 'HTML', reply_markup });
+  } else {
+    r = await tg(env, 'sendMessage', { chat_id: chatId, text, parse_mode: 'HTML', reply_markup });
+  }
   if (r.ok) {
     s.cardId = r.result.message_id;
     s.cardType = type;
     s.cardPhoto = s.photos[0] || null;
-    await tg(env, 'unpinAllChatMessages', { chat_id: chatId });
+    if (!del.ok) await tg(env, 'unpinAllChatMessages', { chat_id: chatId });
     await tg(env, 'pinChatMessage', { chat_id: chatId, message_id: s.cardId, disable_notification: true });
+  } else if (blob) {
+    throw new Error(r.description || 'ส่งรูปไม่สำเร็จ');
   }
 }
 
@@ -304,11 +340,13 @@ async function apiAuth(req, env) {
 
 // อัปโหลดรูปขึ้น Telegram เพื่อเอา file_id แล้วลบข้อความทิ้ง (การ์ดจะแสดงรูปเอง)
 async function uploadPhoto(env, chatId, blob) {
-  const fd = new FormData();
-  fd.append('chat_id', String(chatId));
-  fd.append('photo', blob, 'photo.jpg');
-  fd.append('disable_notification', 'true');
-  const r = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd }).then((x) => x.json());
+  const r = await tgForm(env, 'sendPhoto', () => {
+    const fd = new FormData();
+    fd.append('chat_id', String(chatId));
+    fd.append('photo', blob, 'photo.jpg');
+    fd.append('disable_notification', 'true');
+    return fd;
+  });
   if (!r.ok) throw new Error('อัปโหลดรูปไม่สำเร็จ: ' + r.description);
   const fileId = r.result.photo[r.result.photo.length - 1].file_id;
   await tg(env, 'deleteMessage', { chat_id: chatId, message_id: r.result.message_id });
@@ -385,26 +423,111 @@ async function handleApi(req, url, env, chatId) {
     return json({ ok: true });
   }
 
-  // iPhone Shortcut: multipart form — photo (ไฟล์), text (ไม่บังคับ เช่น "B2 C4")
+  // iPhone Shortcut — รับรูปได้หลายแบบ:
+  //  1) Form: ช่องไหนก็ได้ที่เป็นไฟล์ (แนะนำชื่อ photo) + ช่อง text (ไม่บังคับ)
+  //  2) Form: ช่องข้อความที่เป็น base64 / data URL ของรูป
+  //  3) Request Body = ไฟล์ (รูปทั้งก้อน) + ข้อความผ่าน ?text= หรือ header X-Pookpok-Text
   if (req.method === 'POST' && path === '/api/shot') {
-    const form = await req.formData();
-    const file = form.get('photo');
-    const text = String(form.get('text') || '').trim();
+    const { blob, text, info } = await readShot(req, url);
+    console.log('shot', JSON.stringify(info));
     let s = await loadState(env, chatId);
-    if (file && typeof file !== 'string') {
+    let note = '';
+    if (blob) {
       if (s && isRecent(s) && s.photos.length >= MAX_PHOTOS) return new Response(FULL_MSG, { status: 409, headers: CORS });
-      const fileId = await uploadPhoto(env, chatId, file);
-      s = applyPhoto(s, fileId).s;
-    } else if (!s) {
-      s = newState();
+      const kind = await sniffImage(blob);
+      if (kind === 'heic') {
+        note = '\n⚠️ รูปเป็น HEIC ส่งไม่ได้ — ใน Shortcut เพิ่มคำสั่ง "แปลงรูปภาพ" เป็น JPEG ก่อนส่ง';
+      } else {
+        try {
+          if (s && isRecent(s)) {
+            // รูปเพิ่มของที่จอดเดิม → อัปโหลดแล้วแก้การ์ดเดิม
+            s.photos.push(await uploadPhoto(env, chatId, blob));
+            s.lastPhotoAt = Date.now();
+            if (text) Object.assign(s, parseText(text));
+            await renderCard(env, chatId, s);
+          } else {
+            // ที่จอดใหม่ → ส่งรูปเป็นการ์ดเลยทีเดียว
+            const prev = s;
+            s = newState();
+            s.cardId = prev ? prev.cardId : null;
+            s.photos = ['pending'];
+            s.lastPhotoAt = Date.now();
+            if (text) Object.assign(s, parseText(text));
+            await renderCard(env, chatId, s, { resend: true, blob });
+          }
+          await saveState(env, chatId, s);
+          return new Response(summary(s), { headers: { ...CORS, 'content-type': 'text/plain; charset=utf-8' } });
+        } catch (e) {
+          console.error('upload', e && e.message);
+          note = '\n⚠️ ส่งรูปไม่สำเร็จ: ' + (e && e.message);
+          if (s && s.photos[0] === 'pending') s.photos = [];
+        }
+      }
+    } else {
+      note = '\n⚠️ ไม่ได้รับรูป — เช็กว่าช่อง photo ตั้งชนิดเป็น "ไฟล์"';
     }
+    if (!s) s = newState();
     if (text) Object.assign(s, parseText(text));
     await renderCard(env, chatId, s, { resend: true });
     await saveState(env, chatId, s);
-    return new Response(summary(s), { headers: { ...CORS, 'content-type': 'text/plain; charset=utf-8' } });
+    return new Response(summary(s) + note, { headers: { ...CORS, 'content-type': 'text/plain; charset=utf-8' } });
   }
 
   return json({ error: 'not found' }, 404);
+}
+
+/* ---------- อ่านรูปจาก Shortcut ---------- */
+const isFileLike = (v) => v && typeof v === 'object' && typeof v.arrayBuffer === 'function';
+
+function base64ToBlob(str) {
+  const t = String(str).trim();
+  const m = t.match(/^data:([^;]+);base64,(.+)$/s);
+  const b64 = (m ? m[2] : t).replace(/\s+/g, '');
+  if (b64.length < 200 || !/^[A-Za-z0-9+/=_-]+$/.test(b64)) return null;
+  try { return dataUrlToBlob(`data:${m ? m[1] : 'image/jpeg'};base64,${b64.replace(/-/g, '+').replace(/_/g, '/')}`); }
+  catch (e) { return null; }
+}
+
+async function readShot(req, url) {
+  const ct = req.headers.get('content-type') || '';
+  const info = { ct: ct.split(';')[0], fields: [] };
+  let blob = null;
+  let text = url.searchParams.get('text') || '';
+  const hText = req.headers.get('x-pookpok-text');
+  if (hText) { try { text = decodeURIComponent(hText); } catch (e) { text = hText; } }
+
+  if (ct.includes('multipart/form-data') || ct.includes('application/x-www-form-urlencoded')) {
+    const form = await req.formData();
+    for (const [k, v] of form.entries()) {
+      if (isFileLike(v)) {
+        info.fields.push(`${k}:file(${v.type || '?'},${v.size}B)`);
+        if (!blob && v.size > 0) blob = v;
+      } else {
+        info.fields.push(`${k}:text(${String(v).length})`);
+        if (k === 'text') text = String(v);
+        else if (!blob && String(v).length > 200) blob = base64ToBlob(v);
+      }
+    }
+  } else if (ct.startsWith('image/') || ct.includes('octet-stream')) {
+    const buf = await req.arrayBuffer();
+    info.fields.push(`body:${buf.byteLength}B`);
+    if (buf.byteLength > 0) blob = new Blob([buf], { type: ct.startsWith('image/') ? ct.split(';')[0] : 'image/jpeg' });
+  } else {
+    const raw = await req.text();
+    info.fields.push(`raw:${raw.length}`);
+    if (raw.length > 200) blob = base64ToBlob(raw);
+  }
+  info.hasBlob = !!blob;
+  info.text = text ? text.length : 0;
+  return { blob, text: String(text || '').trim(), info };
+}
+
+// ดูหัวไฟล์ว่าเป็น HEIC ไหม (Telegram ไม่รับ)
+async function sniffImage(blob) {
+  const h = new Uint8Array(await blob.slice(0, 12).arrayBuffer());
+  const tag = String.fromCharCode(...h.slice(4, 12));
+  if (/^ftyp(heic|heix|hevc|mif1|msf1)/.test(tag)) return 'heic';
+  return 'ok';
 }
 
 /* ---------- Update handler ---------- */
