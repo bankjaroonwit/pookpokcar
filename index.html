@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ปุกป็อก | จำที่จอดรถ</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { kanit: ['Kanit', 'sans-serif'] },
+      colors: {
+        mint:  { 50:'#F2FBF7', 100:'#DFF5EA', 200:'#BDEAD6', 400:'#5DC9A0', 500:'#3BB68C', 600:'#2E9C77' },
+        ink:   { 400:'#9AA5A1', 600:'#5B6763', 900:'#28312E' }
+      },
+      boxShadow: { soft: '0 6px 24px -8px rgba(45,80,65,.18)' }
+    }
+  }
+}
+</script>
+<style>
+  body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
+  .fade-in { animation: fade .28s ease-out both; }
+  @keyframes fade { from { opacity:0; transform: translateY(8px);} to {opacity:1; transform:none;} }
+  .press:active { transform: scale(.97); }
+  .press { transition: transform .12s ease, background-color .2s ease; }
+  input:focus { outline: none; }
+</style>
+</head>
+
+<body class="font-kanit bg-mint-50 text-ink-900 min-h-screen antialiased">
+
+<!-- ====== SPLASH ====== -->
+<div id="splash" class="fixed inset-0 z-50 bg-mint-50 flex flex-col items-center justify-center gap-3">
+  <div class="w-14 h-14 rounded-full border-4 border-mint-200 border-t-mint-500 animate-spin"></div>
+  <p class="text-ink-400 text-sm font-light">กำลังเตรียมความพร้อม...</p>
+</div>
+
+<!-- ====== TOAST ====== -->
+<div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden max-w-[90%]">
+  <div id="toastBox" class="px-5 py-3 rounded-2xl shadow-soft text-sm text-white bg-ink-900/90 backdrop-blur text-center"></div>
+</div>
+
+<!-- ====== HEADER ====== -->
+<header class="px-5 pt-6 pb-2 flex items-center justify-between">
+  <div class="flex items-center gap-2.5">
+    <div class="w-10 h-10 rounded-2xl bg-mint-500 flex items-center justify-center shadow-soft text-xl">🅿️</div>
+    <div>
+      <h1 class="text-lg font-semibold leading-tight">ปุกป็อก</h1>
+      <p class="text-[11px] text-ink-400 font-light leading-tight">ตัวช่วยคนขี้ลืม จำที่จอดรถ</p>
+    </div>
+  </div>
+  <div id="userChip" class="hidden items-center gap-2 bg-white rounded-full pl-1 pr-3 py-1 shadow-soft">
+    <img id="userPic" class="w-7 h-7 rounded-full object-cover bg-mint-100" alt="">
+    <span id="userName" class="text-xs text-ink-600 max-w-[90px] truncate"></span>
+  </div>
+</header>
+
+<main class="px-5 pb-28 pt-2 max-w-md mx-auto">
+
+  <!-- ================= STATE A : ยังไม่ได้จอด ================= -->
+  <section id="viewEmpty" class="hidden fade-in">
+    <div class="bg-white rounded-3xl shadow-soft p-6 text-center">
+      <div class="w-20 h-20 mx-auto rounded-full bg-mint-100 flex items-center justify-center text-4xl mb-4">🚗</div>
+      <h2 class="text-xl font-medium">ยังไม่มีข้อมูลที่จอด</h2>
+      <p class="text-ink-400 text-sm font-light mt-1">ถ่ายรูปเสา/โซนที่จอด แล้วกดบันทึกได้เลย</p>
+    </div>
+
+    <!-- รูปภาพ -->
+    <div class="mt-4">
+      <label class="text-sm text-ink-600 font-medium ml-1">รูปจุดจอด <span class="text-ink-400 font-light">(ไม่บังคับ)</span></label>
+      <div id="photoZone" class="mt-2 relative rounded-3xl overflow-hidden bg-white shadow-soft border-2 border-dashed border-mint-200 h-52 flex flex-col items-center justify-center cursor-pointer press">
+        <div id="photoPlaceholder" class="text-center px-6">
+          <div class="text-3xl mb-1">📷</div>
+          <p class="text-sm text-ink-600">แตะเพื่อถ่ายรูป / เลือกรูป</p>
+          <p class="text-[11px] text-ink-400 font-light mt-0.5">เช่น ป้ายเสา B2 โซน C</p>
+        </div>
+        <img id="photoPreview" class="hidden absolute inset-0 w-full h-full object-cover" alt="รูปจุดจอด">
+        <button id="btnRemovePhoto" type="button" class="hidden absolute top-2 right-2 w-9 h-9 rounded-full bg-black/55 text-white text-lg leading-none">×</button>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" capture="environment" class="hidden">
+    </div>
+
+    <!-- รายละเอียด -->
+    <div class="mt-4 bg-white rounded-3xl shadow-soft p-4 space-y-3">
+      <div>
+        <label class="text-xs text-ink-400" for="inpSpot">ตำแหน่ง (ชั้น / โซน / เสา)</label>
+        <input id="inpSpot" type="text" maxlength="60" placeholder="เช่น B2 เสา C4"
+          class="w-full mt-1 px-4 py-3 rounded-2xl bg-mint-50 border border-mint-100 focus:border-mint-400 text-base">
+      </div>
+      <div>
+        <label class="text-xs text-ink-400" for="inpNote">โน้ตเพิ่มเติม</label>
+        <input id="inpNote" type="text" maxlength="120" placeholder="เช่น ใกล้ลิฟต์ฝั่งโรงหนัง"
+          class="w-full mt-1 px-4 py-3 rounded-2xl bg-mint-50 border border-mint-100 focus:border-mint-400 text-base">
+      </div>
+      <label class="flex items-center gap-3 pt-1 cursor-pointer select-none">
+        <input id="chkGps" type="checkbox" checked class="w-5 h-5 accent-mint-500 rounded">
+        <span class="text-sm text-ink-600">บันทึกพิกัด GPS เพื่อใช้นำทางกลับ</span>
+      </label>
+    </div>
+
+    <button id="btnSave" class="press w-full mt-5 py-4 rounded-2xl bg-mint-500 hover:bg-mint-600 text-white text-lg font-medium shadow-soft flex items-center justify-center gap-2">
+      <span id="saveSpinner" class="hidden w-5 h-5 rounded-full border-2 border-white/40 border-t-white animate-spin"></span>
+      <span id="saveLabel">บันทึกจุดจอดรถ</span>
+    </button>
+    <p class="text-center text-[11px] text-ink-400 font-light mt-3">ข้อมูลถูกเก็บไว้ในเครื่องคุณเท่านั้น</p>
+  </section>
+
+  <!-- ================= STATE B : จอดแล้ว ================= -->
+  <section id="viewParked" class="hidden fade-in">
+    <div class="bg-white rounded-3xl shadow-soft overflow-hidden">
+      <div id="savedPhotoWrap" class="hidden">
+        <img id="savedPhoto" class="w-full h-56 object-cover bg-mint-100" alt="รูปจุดจอด">
+      </div>
+      <div class="p-5">
+        <div class="flex items-center gap-2 text-mint-600 text-sm font-medium">
+          <span class="w-2 h-2 rounded-full bg-mint-500 animate-pulse"></span> จอดรถอยู่
+        </div>
+        <h2 id="outSpot" class="text-2xl font-semibold mt-1 break-words">-</h2>
+        <p id="outNote" class="text-sm text-ink-600 font-light mt-1 break-words"></p>
+
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <div class="bg-mint-50 rounded-2xl p-3">
+            <p class="text-[11px] text-ink-400">เวลาที่จอด</p>
+            <p id="outTime" class="text-sm font-medium mt-0.5">-</p>
+          </div>
+          <div class="bg-mint-50 rounded-2xl p-3">
+            <p class="text-[11px] text-ink-400">จอดมาแล้ว</p>
+            <p id="outElapsed" class="text-sm font-medium mt-0.5 text-mint-600">-</p>
+          </div>
+        </div>
+
+        <div id="gpsBox" class="mt-3 flex items-start gap-2 bg-mint-50 rounded-2xl p-3">
+          <span class="text-base leading-none mt-0.5">📍</span>
+          <p id="outGps" class="text-xs text-ink-600 font-light break-all">-</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-5 space-y-3">
+      <button id="btnNav" class="press w-full py-4 rounded-2xl bg-mint-500 hover:bg-mint-600 text-white text-lg font-medium shadow-soft">
+        🧭 นำทางกลับไปหารถ
+      </button>
+      <div class="grid grid-cols-2 gap-3">
+        <button id="btnShare" class="press py-3.5 rounded-2xl bg-white text-ink-600 font-medium shadow-soft border border-mint-100">
+          💬 ส่งเข้าแชท
+        </button>
+        <button id="btnEdit" class="press py-3.5 rounded-2xl bg-white text-ink-600 font-medium shadow-soft border border-mint-100">
+          ✏️ แก้ไขข้อมูล
+        </button>
+      </div>
+      <button id="btnReset" class="press w-full py-3.5 rounded-2xl bg-red-50 text-red-500 font-medium border border-red-100">
+        🗑️ ออกจากที่จอดแล้ว (ล้างข้อมูล)
+      </button>
+    </div>
+  </section>
+</main>
+
+<!-- ====== CONFIRM MODAL ====== -->
+<div id="modal" class="hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm items-end sm:items-center justify-center">
+  <div class="bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6 fade-in">
+    <h3 class="text-lg font-medium text-center">ยืนยันการล้างข้อมูล?</h3>
+    <p class="text-sm text-ink-400 font-light text-center mt-1">ข้อมูลจุดจอดและรูปภาพจะถูกลบถาวร</p>
+    <div class="grid grid-cols-2 gap-3 mt-6">
+      <button id="modalCancel" class="press py-3.5 rounded-2xl bg-mint-50 text-ink-600 font-medium">ยกเลิก</button>
+      <button id="modalOk" class="press py-3.5 rounded-2xl bg-red-500 text-white font-medium">ลบเลย</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   ปุกป็อก (PookLok) — LIFF Parking Reminder
+   ============================================================ */
+'use strict';
+
+/** 🔑 ใส่ LIFF ID ของคุณตรงนี้ */
+const LIFF_ID = '2011719569-OX5vmgXU';
+
+const KEY = 'pooklok_parking_v1';
+const $ = (id) => document.getElementById(id);
+
+let tempPhoto = null;      // base64 รูปที่เลือกไว้ (ยังไม่บันทึก)
+let elapsedTimer = null;
+let inLiff = false;
+
+/* ---------- Utilities ---------- */
+function toast(msg, type = 'info') {
+  const box = $('toastBox');
+  box.textContent = msg;
+  box.className = 'px-5 py-3 rounded-2xl shadow-soft text-sm text-white text-center backdrop-blur ' +
+    (type === 'error' ? 'bg-red-500/95' : type === 'success' ? 'bg-mint-600/95' : 'bg-ink-900/90');
+  const t = $('toast');
+  t.classList.remove('hidden');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.add('hidden'), 2600);
+}
+
+const pad = (n) => String(n).padStart(2, '0');
+
+function fmtDateTime(ts) {
+  const d = new Date(ts);
+  const days = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+  return `${days[d.getDay()]} ${d.getDate()}/${d.getMonth()+1} • ${pad(d.getHours())}:${pad(d.getMinutes())} น.`;
+}
+
+function fmtElapsed(ts) {
+  let s = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+  if (h > 0) return `${h} ชม. ${m} นาที`;
+  if (m > 0) return `${m} นาที`;
+  return 'เพิ่งจอด';
+}
+
+/* ---------- Storage ---------- */
+function loadData() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return null;
+    const d = JSON.parse(raw);
+    return (d && typeof d.savedAt === 'number') ? d : null;
+  } catch (e) {
+    console.warn('load error', e);
+    localStorage.removeItem(KEY);
+    return null;
+  }
+}
+
+function saveData(data) {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(data));
+    return true;
+  } catch (e) {
+    // รูปใหญ่เกินโควต้า → ลองบันทึกแบบไม่มีรูป
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ ...data, photo: null }));
+      toast('รูปใหญ่เกินไป บันทึกเฉพาะข้อมูลข้อความ', 'error');
+      return true;
+    } catch (e2) {
+      toast('บันทึกไม่สำเร็จ: พื้นที่เก็บข้อมูลเต็ม', 'error');
+      return false;
+    }
+  }
+}
+
+/* ---------- Photo (compress ก่อนเก็บ) ---------- */
+function compressImage(file, maxSize = 1000, quality = 0.7) {
+  return new Promise((resolve, reject) => {
+    if (!file.type || !file.type.startsWith('image/')) return reject(new Error('ไฟล์ไม่ใช่รูปภาพ'));
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('อ่านไฟล์ไม่สำเร็จ'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('เปิดรูปภาพไม่ได้'));
+      img.onload = () => {
+        try {
+          let { width: w, height: h } = img;
+          const scale = Math.min(1, maxSize / Math.max(w, h));
+          w = Math.round(w * scale); h = Math.round(h * scale);
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          const ctx = c.getContext('2d');
+          ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(c.toDataURL('image/jpeg', quality));
+        } catch (err) { reject(err); }
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ---------- GPS ---------- */
+function getPosition(timeout = 10000) {
+  return new Promise((resolve, reject) => {
+    if (!('geolocation' in navigator)) return reject(new Error('อุปกรณ์ไม่รองรับ GPS'));
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({
+        lat: +pos.coords.latitude.toFixed(6),
+        lng: +pos.coords.longitude.toFixed(6),
+        acc: Math.round(pos.coords.accuracy || 0)
+      }),
+      (err) => {
+        const msg = { 1: 'ไม่ได้รับอนุญาตให้เข้าถึงตำแหน่ง', 2: 'หาตำแหน่งไม่พบ (สัญญาณอ่อน)', 3: 'หาตำแหน่งนานเกินไป' };
+        reject(new Error(msg[err.code] || 'เกิดข้อผิดพลาดกับ GPS'));
+      },
+      { enableHighAccuracy: true, timeout, maximumAge: 0 }
+    );
+  });
+}
+
+/* ---------- Render ---------- */
+function showEmpty(prefill) {
+  $('viewParked').classList.add('hidden');
+  $('viewEmpty').classList.remove('hidden');
+  stopTimer();
+  if (prefill) {
+    $('inpSpot').value = prefill.spot || '';
+    $('inpNote').value = prefill.note || '';
+    if (prefill.photo) setPhotoPreview(prefill.photo);
+  }
+}
+
+function showParked(d) {
+  $('viewEmpty').classList.add('hidden');
+  $('viewParked').classList.remove('hidden');
+
+  $('outSpot').textContent = d.spot || 'ไม่ได้ระบุตำแหน่ง';
+  $('outNote').textContent = d.note || '';
+  $('outNote').classList.toggle('hidden', !d.note);
+  $('outTime').textContent = fmtDateTime(d.savedAt);
+
+  if (d.photo) {
+    $('savedPhoto').src = d.photo;
+    $('savedPhotoWrap').classList.remove('hidden');
+  } else {
+    $('savedPhotoWrap').classList.add('hidden');
+  }
+
+  if (d.gps) {
+    $('outGps').textContent = `${d.gps.lat}, ${d.gps.lng} (ความแม่นยำ ±${d.gps.acc} ม.)`;
+    $('btnNav').disabled = false;
+    $('btnNav').classList.remove('opacity-40');
+    $('btnNav').innerHTML = '🧭 นำทางกลับไปหารถ';
+  } else {
+    $('outGps').textContent = 'ไม่ได้บันทึกพิกัด GPS ไว้';
+    $('btnNav').disabled = true;
+    $('btnNav').classList.add('opacity-40');
+    $('btnNav').innerHTML = '🧭 ไม่มีพิกัดสำหรับนำทาง';
+  }
+
+  startTimer(d.savedAt);
+}
+
+function startTimer(ts) {
+  stopTimer();
+  const tick = () => { $('outElapsed').textContent = fmtElapsed(ts); };
+  tick();
+  elapsedTimer = setInterval(tick, 20000);
+}
+function stopTimer() { if (elapsedTimer) { clearInterval(elapsedTimer); elapsedTimer = null; } }
+
+function setPhotoPreview(dataUrl) {
+  tempPhoto = dataUrl;
+  $('photoPreview').src = dataUrl;
+  $('photoPreview').classList.remove('hidden');
+  $('photoPlaceholder').classList.add('hidden');
+  $('btnRemovePhoto').classList.remove('hidden');
+}
+function clearPhotoPreview() {
+  tempPhoto = null;
+  $('fileInput').value = '';
+  $('photoPreview').src = '';
+  $('photoPreview').classList.add('hidden');
+  $('photoPlaceholder').classList.remove('hidden');
+  $('btnRemovePhoto').classList.add('hidden');
+}
+
+/* ---------- Actions ---------- */
+async function handleSave() {
+  const btn = $('btnSave');
+  btn.disabled = true;
+  $('saveSpinner').classList.remove('hidden');
+  $('saveLabel').textContent = 'กำลังบันทึก...';
+
+  let gps = null;
+  if ($('chkGps').checked) {
+    $('saveLabel').textContent = 'กำลังหาพิกัด...';
+    try {
+      gps = await getPosition();
+    } catch (err) {
+      toast(err.message + ' — บันทึกแบบไม่มีพิกัด', 'error');
+    }
+  }
+
+  const data = {
+    spot: $('inpSpot').value.trim(),
+    note: $('inpNote').value.trim(),
+    photo: tempPhoto,
+    gps,
+    savedAt: Date.now()
+  };
+
+  if (saveData(data)) {
+    clearPhotoPreview();
+    $('inpSpot').value = ''; $('inpNote').value = '';
+    showParked(loadData() || data);
+    toast('บันทึกจุดจอดเรียบร้อย 🎉', 'success');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  btn.disabled = false;
+  $('saveSpinner').classList.add('hidden');
+  $('saveLabel').textContent = 'บันทึกจุดจอดรถ';
+}
+
+function openExternal(url) {
+  try {
+    if (inLiff && liff.isInClient()) { liff.openWindow({ url, external: true }); return; }
+  } catch (e) { console.warn(e); }
+  window.open(url, '_blank', 'noopener');
+}
+
+function handleNav() {
+  const d = loadData();
+  if (!d || !d.gps) return toast('ไม่มีพิกัดสำหรับนำทาง', 'error');
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${d.gps.lat},${d.gps.lng}&travelmode=walking`;
+  openExternal(url);
+}
+
+async function handleShare() {
+  const d = loadData();
+  if (!d) return;
+  const lines = [
+    '🅿️ ปุกป็อก — บันทึกที่จอดรถ',
+    `📍 ${d.spot || 'ไม่ได้ระบุตำแหน่ง'}`,
+    d.note ? `📝 ${d.note}` : '',
+    `🕒 ${fmtDateTime(d.savedAt)}`,
+    d.gps ? `🧭 https://www.google.com/maps/search/?api=1&query=${d.gps.lat},${d.gps.lng}` : ''
+  ].filter(Boolean);
+  const text = lines.join('\n');
+
+  try {
+    if (inLiff && liff.isApiAvailable('shareTargetPicker')) {
+      const res = await liff.shareTargetPicker([{ type: 'text', text }]);
+      if (res) toast('ส่งข้อความเรียบร้อย', 'success');
+      return;
+    }
+    throw new Error('no picker');
+  } catch (e) {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast('คัดลอกข้อมูลแล้ว นำไปวางในแชทได้เลย', 'success');
+    } catch (e2) {
+      toast('แชร์ไม่สำเร็จบนอุปกรณ์นี้', 'error');
+    }
+  }
+}
+
+function handleReset() {
+  const modal = $('modal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+function closeModal() {
+  $('modal').classList.add('hidden');
+  $('modal').classList.remove('flex');
+}
+
+/* ---------- Bind Events ---------- */
+function bindEvents() {
+  $('photoZone').addEventListener('click', (e) => {
+    if (e.target.id === 'btnRemovePhoto') return;
+    $('fileInput').click();
+  });
+
+  $('btnRemovePhoto').addEventListener('click', (e) => { e.stopPropagation(); clearPhotoPreview(); });
+
+  $('fileInput').addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (file.size > 20 * 1024 * 1024) { toast('ไฟล์ใหญ่เกิน 20MB', 'error'); $('fileInput').value=''; return; }
+    toast('กำลังประมวลผลรูป...');
+    try {
+      setPhotoPreview(await compressImage(file));
+    } catch (err) {
+      console.error(err);
+      toast(err.message || 'โหลดรูปไม่สำเร็จ', 'error');
+      clearPhotoPreview();
+    }
+  });
+
+  $('btnSave').addEventListener('click', handleSave);
+  $('btnNav').addEventListener('click', handleNav);
+  $('btnShare').addEventListener('click', handleShare);
+  $('btnEdit').addEventListener('click', () => showEmpty(loadData()));
+  $('btnReset').addEventListener('click', handleReset);
+  $('modalCancel').addEventListener('click', closeModal);
+  $('modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
+
+  $('modalOk').addEventListener('click', () => {
+    try { localStorage.removeItem(KEY); } catch (e) { console.warn(e); }
+    clearPhotoPreview();
+    $('inpSpot').value = ''; $('inpNote').value = '';
+    closeModal();
+    showEmpty();
+    toast('ล้างข้อมูลแล้ว ขับรถปลอดภัยนะ 👋', 'success');
+  });
+
+  $('inpSpot').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('inpNote').focus(); });
+  $('inpNote').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.target.blur(); handleSave(); } });
+
+  // กลับมาที่แท็บ → อัปเดตเวลาที่ผ่านไป
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      const d = loadData();
+      if (d && !$('viewParked').classList.contains('hidden')) $('outElapsed').textContent = fmtElapsed(d.savedAt);
+    }
+  });
+}
+
+/* ---------- LIFF Init ---------- */
+async function initLiff() {
+  if (typeof liff === 'undefined') return;
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    inLiff = true;
+    if (liff.isLoggedIn()) {
+      const p = await liff.getProfile();
+      $('userName').textContent = p.displayName || '';
+      if (p.pictureUrl) $('userPic').src = p.pictureUrl;
+      $('userChip').classList.remove('hidden');
+      $('userChip').classList.add('flex');
+    } else if (!liff.isInClient()) {
+      // เปิดผ่านเบราว์เซอร์ภายนอก: ใช้งานต่อได้โดยไม่บังคับล็อกอิน
+      console.info('LIFF: not logged in (external browser)');
+    }
+  } catch (err) {
+    console.warn('LIFF init failed:', err);
+    // ไม่ขัดจังหวะผู้ใช้ — ทำงานต่อในโหมดเว็บปกติ
+  }
+}
+
+/* ---------- Boot ---------- */
+(async function boot() {
+  bindEvents();
+  await initLiff();
+  const data = loadData();
+  data ? showParked(data) : showEmpty();
+  $('splash').style.display = 'none';
+})();
+</script>
+</body>
+</html>
