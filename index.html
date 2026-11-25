@@ -275,6 +275,9 @@ tailwind.config = {
       <button id="btnCancelEdit" class="hidden press w-14 h-14 rounded-2xl bg-card shadow-soft flex items-center justify-center text-ink-2" aria-label="ยกเลิก">
         <span data-i="x" data-s="w-5 h-5"></span>
       </button>
+      <button id="btnSkip" class="hidden press w-[60px] h-14 rounded-2xl bg-card shadow-soft flex-col items-center justify-center gap-0.5 text-ink-2" aria-label="บันทึกโดยไม่ถ่ายรูป">
+        <span data-i="check" data-s="w-5 h-5"></span><span class="text-[10px]">ข้ามรูป</span>
+      </button>
       <button id="btnSave" class="press flex-1 h-14 rounded-2xl grad text-white shadow-glow flex items-center justify-center gap-2 px-4">
         <span id="saveSpinner" class="hidden w-5 h-5 rounded-full border-2 border-white/40 border-t-white animate-spin"></span>
         <span id="saveIcon" data-i="check" data-s="w-5 h-5"></span>
@@ -333,7 +336,7 @@ tailwind.config = {
 'use strict';
 
 /** 🏷️ เวอร์ชันแอป — เปลี่ยนทุกครั้งที่ปล่อยของใหม่ (และแก้ VERSION ใน sw.js ให้ตรงกัน) */
-const APP_VERSION = '2.3.0';
+const APP_VERSION = '2.4.0';
 
 const KEY = 'pooklok_parking_v2';
 const OLD_KEY = 'pooklok_parking_v1';
@@ -616,17 +619,32 @@ function syncChips() {
   updateSummary();
 }
 
+// ปุ่มหลักด้านล่าง: ยังไม่มีรูป = "ถ่ายรูป" / มีรูปแล้ว = "บันทึก"
+let saveMode = 'save';
+function updatePrimary() {
+  const mode = (!editing && form.photos.length === 0) ? 'camera' : 'save';
+  const changed = mode !== saveMode;
+  saveMode = mode;
+  $('saveIcon').innerHTML = icon(mode === 'camera' ? 'camera' : 'check', 'w-5 h-5');
+  $('saveLabel').textContent = mode === 'camera' ? 'ถ่ายรูปจุดจอด' : (editing ? 'บันทึกการแก้ไข' : 'บันทึกที่จอด');
+  $('btnSkip').classList.toggle('hidden', mode !== 'camera');
+  $('btnSkip').classList.toggle('flex', mode === 'camera');
+  updateSummary();
+  if (changed) { const b = $('btnSave'); b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
+}
+
 // โชว์สรุปบนปุ่มบันทึก ให้เห็นก่อนกด
 function updateSummary() {
   const parts = [$('inpFloor').value.trim().toUpperCase(), $('inpZone').value.trim().toUpperCase()].filter(Boolean);
   $('saveSummary').textContent = parts.join(' · ');
-  $('saveSummary').classList.toggle('hidden', !parts.length);
+  $('saveSummary').classList.toggle('hidden', !parts.length || saveMode === 'camera');
 }
 
 /* ---------- Form: photos ---------- */
 function renderPhotoGrid() {
   const g = $('photoGrid');
   g.replaceChildren();
+  updatePrimary();
   const n = form.photos.length;
   $('photoCount').textContent = n ? `${n}/${MAX_PHOTOS} · แตะรูปเพื่อปักหมุด` : '';
 
@@ -714,7 +732,6 @@ function showForm(prefill) {
   $('formTitle').textContent = editing ? 'แก้ไขที่จอด' : 'จอดตรงไหน?';
   $('formSub').textContent = editing ? 'แก้แล้วกดบันทึกด้านล่าง' : 'แตะเลือกไม่กี่ที ขากลับไม่หลง';
   $('btnCancelEdit').classList.toggle('hidden', !editing);
-  $('saveLabel').textContent = editing ? 'บันทึกการแก้ไข' : 'บันทึกที่จอด';
   stopTimer();
 
   const d = prefill || {};
@@ -893,6 +910,7 @@ async function handleSave() {
   $('saveSpinner').classList.add('hidden');
   $('saveIcon').classList.remove('hidden');
   $('saveLabel').textContent = label;
+  if (!$('viewForm').classList.contains('hidden')) updatePrimary();
 }
 
 function handleNav() {
@@ -984,7 +1002,10 @@ function bindEvents() {
   $('photoTrack').addEventListener('scroll', () => requestAnimationFrame(updateDots), { passive: true });
   window.addEventListener('resize', fitPhotoHeight);
 
-  $('btnSave').addEventListener('click', handleSave);
+  $('btnSave').addEventListener('click', () => {
+    if (saveMode === 'camera') { buzz(); $('fileInput').click(); } else handleSave();
+  });
+  $('btnSkip').addEventListener('click', handleSave);
   $('btnCancelEdit').addEventListener('click', () => { const d = loadData(); editing = false; d ? showParked(d) : showForm(); });
   $('btnNav').addEventListener('click', handleNav);
   $('btnShare').addEventListener('click', handleShare);
