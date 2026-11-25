@@ -208,6 +208,7 @@ tailwind.config = {
   </section>
 
   <p id="installHint" class="hidden text-center text-[11px] text-ink-3 font-light mt-6 px-4"></p>
+  <p id="appVersion" class="text-center text-[11px] text-ink-3 font-light mt-4"></p>
 </main>
 
 <!-- ====== CONFIRM MODAL ====== -->
@@ -246,6 +247,9 @@ tailwind.config = {
    ปุกป็อก (PookPok) — LIFF Parking Reminder
    ============================================================ */
 'use strict';
+
+/** 🏷️ เวอร์ชันแอป — เปลี่ยนทุกครั้งที่ปล่อยของใหม่ (และแก้ VERSION ใน sw.js ให้ตรงกัน) */
+const APP_VERSION = '2.0.0';
 
 /** 🔑 LIFF ID */
 const LIFF_ID = '2011719569-OX5vmgXU';
@@ -842,6 +846,7 @@ function setupPwa() {
 
 /* ---------- Boot ---------- */
 (async function boot() {
+  $('appVersion').textContent = `ปุกป็อก v${APP_VERSION}`;
   bindEvents();
   setupPwa();
   await initLiff();
