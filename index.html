@@ -87,7 +87,7 @@ tailwind.config = {
 </div>
 
 <!-- ====== HEADER ====== -->
-<header class="px-5 pt-6 pb-2 flex items-center justify-between max-w-md mx-auto">
+<header class="px-4 pt-4 pb-2 flex items-center justify-between max-w-md mx-auto">
   <div class="flex items-center gap-2.5">
     <img src="icons/icon-192.png" alt="" class="w-10 h-10 rounded-2xl shadow-soft">
     <div>
@@ -101,7 +101,7 @@ tailwind.config = {
   </div>
 </header>
 
-<main class="px-5 pb-28 pt-2 max-w-md mx-auto">
+<main class="px-4 pb-44 pt-1 max-w-md mx-auto">
 
   <!-- ================= FORM : บันทึก / แก้ไข ================= -->
   <section id="viewForm" class="hidden fade-in">
@@ -164,61 +164,95 @@ tailwind.config = {
       </label>
     </div>
 
-    <button id="btnSave" class="press w-full mt-5 py-4 rounded-2xl bg-accent hover:bg-accent-d text-white text-lg font-medium shadow-soft flex items-center justify-center gap-2">
-      <span id="saveSpinner" class="hidden w-5 h-5 rounded-full border-2 border-white/40 border-t-white animate-spin"></span>
-      <span id="saveLabel">บันทึกจุดจอดรถ</span>
-    </button>
-    <button id="btnCancelEdit" class="hidden press w-full mt-3 py-3.5 rounded-2xl bg-card text-ink-2 font-medium border border-line">ยกเลิก</button>
-    <p class="text-center text-[11px] text-ink-3 font-light mt-3">ข้อมูลถูกเก็บไว้ในเครื่องคุณเท่านั้น</p>
+    <p class="text-center text-[11px] text-ink-3 font-light mt-4">ข้อมูลถูกเก็บไว้ในเครื่องคุณเท่านั้น</p>
   </section>
 
-  <!-- ================= GUIDE : พาไปหารถ ================= -->
+  <!-- ================= GUIDE : พาไปหารถ (หน้าเดียวจบ) ================= -->
   <section id="viewParked" class="hidden fade-in">
-    <div class="bg-card rounded-3xl shadow-soft p-4 flex items-center justify-between gap-3">
-      <div>
-        <div class="flex items-center gap-2 text-accent-d text-sm font-medium">
-          <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span> จอดรถอยู่
-        </div>
-        <p id="outTime" class="text-xs text-ink-3 font-light mt-0.5">-</p>
-      </div>
-      <div class="text-right">
-        <p class="text-[11px] text-ink-3">จอดมาแล้ว</p>
-        <p id="outElapsed" class="text-base font-medium text-accent-d">-</p>
-      </div>
+    <div class="flex items-center justify-between px-1">
+      <span class="flex items-center gap-2 text-accent-d text-sm font-medium">
+        <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
+        จอดมาแล้ว <span id="outElapsed">-</span>
+      </span>
+      <span id="outTime" class="text-xs text-ink-3 font-light">-</span>
     </div>
 
-    <h2 class="text-lg font-medium mt-5 mb-2 px-1">🧭 พาไปหารถ</h2>
-    <ol id="steps" class="space-y-3"></ol>
+    <div class="mt-2 bg-card rounded-3xl shadow-soft p-3">
+      <div id="rowExit" class="flex items-center gap-2.5 px-1 pb-2.5">
+        <span id="numExit" class="w-6 h-6 shrink-0 rounded-full bg-accent text-white flex items-center justify-center text-xs font-semibold">1</span>
+        <span class="text-xs text-ink-3 shrink-0">กลับทางเดิม</span>
+        <span id="outExit" class="text-lg font-semibold leading-tight break-words min-w-0"></span>
+      </div>
+      <div id="rowTiles" class="grid grid-cols-2 gap-2">
+        <div class="bg-field rounded-2xl px-3 py-2">
+          <div class="flex items-center gap-1.5 text-xs text-ink-3">
+            <span id="numFloor" class="w-5 h-5 rounded-full bg-accent text-white flex items-center justify-center text-[11px] font-semibold">2</span> ชั้น
+          </div>
+          <p id="outFloor" class="text-5xl font-semibold text-accent-d leading-tight tracking-wide truncate">–</p>
+        </div>
+        <div class="bg-field rounded-2xl px-3 py-2">
+          <div class="flex items-center gap-1.5 text-xs text-ink-3">
+            <span id="numZone" class="w-5 h-5 rounded-full bg-accent text-white flex items-center justify-center text-[11px] font-semibold">3</span> โซน / เสา
+          </div>
+          <p id="outZone" class="text-5xl font-semibold text-accent-d leading-tight tracking-wide truncate">–</p>
+        </div>
+      </div>
+      <p id="outNote" class="text-sm text-ink-2 mt-2.5 px-1 break-words"></p>
+      <p id="emptyHint" class="hidden text-sm text-ink-3 text-center py-4">ไม่ได้จดรายละเอียดไว้ กด ✏️ แก้ไข เพื่อเพิ่ม</p>
+    </div>
 
-    <div class="mt-5 space-y-3">
-      <div id="navWrap">
-        <button id="btnNav" class="press w-full py-4 rounded-2xl bg-accent hover:bg-accent-d text-white text-lg font-medium shadow-soft">
-          📍 นำทางด้วย GPS
-        </button>
-        <p id="navHint" class="text-center text-[11px] text-ink-3 font-light mt-1.5"></p>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <button id="btnShare" class="press py-3.5 rounded-2xl bg-card text-ink-2 font-medium shadow-soft border border-line">💬 ส่งเข้าแชท</button>
-        <button id="btnEdit" class="press py-3.5 rounded-2xl bg-card text-ink-2 font-medium shadow-soft border border-line">✏️ แก้ไขข้อมูล</button>
-      </div>
-      <button id="btnReset" class="press w-full py-3.5 rounded-2xl bg-danger-soft text-danger font-medium border border-danger-line">
-        🚗 เจอรถแล้ว / ออกจากที่จอด (ล้างข้อมูล)
-      </button>
+    <div id="photoBox" class="mt-3">
+      <div id="photoTrack" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar rounded-3xl bg-black"></div>
+      <div id="photoDots" class="flex justify-center gap-1.5 mt-2"></div>
     </div>
   </section>
 
   <p id="installHint" class="hidden text-center text-[11px] text-ink-3 font-light mt-6 px-4"></p>
-  <p id="appVersion" class="text-center text-[11px] text-ink-3 font-light mt-4"></p>
 </main>
+
+<!-- ====== BOTTOM BAR : หน้าจอดแล้ว (โซนนิ้วโป้ง) ====== -->
+<div id="barParked" class="hidden fixed bottom-0 inset-x-0 z-30 bg-page/95 backdrop-blur border-t border-line">
+  <div class="max-w-md mx-auto px-4 pt-3" style="padding-bottom:max(10px, env(safe-area-inset-bottom))">
+    <div class="grid grid-cols-3 gap-2">
+      <button id="btnNav" class="press py-2.5 rounded-2xl bg-card border border-line shadow-soft flex flex-col items-center">
+        <span class="text-xl leading-none">📍</span><span id="navLabel" class="text-xs text-ink-2 mt-1">นำทาง GPS</span>
+      </button>
+      <button id="btnShare" class="press py-2.5 rounded-2xl bg-card border border-line shadow-soft flex flex-col items-center">
+        <span class="text-xl leading-none">💬</span><span class="text-xs text-ink-2 mt-1">ส่งเข้าแชท</span>
+      </button>
+      <button id="btnEdit" class="press py-2.5 rounded-2xl bg-card border border-line shadow-soft flex flex-col items-center">
+        <span class="text-xl leading-none">✏️</span><span class="text-xs text-ink-2 mt-1">แก้ไข</span>
+      </button>
+    </div>
+    <button id="btnReset" class="press w-full mt-2 py-4 rounded-2xl bg-accent hover:bg-accent-d text-white text-lg font-medium shadow-soft">
+      ✅ เจอรถแล้ว
+    </button>
+    <p class="appVersion text-center text-[10px] text-ink-3 font-light mt-1"></p>
+  </div>
+</div>
+
+<!-- ====== BOTTOM BAR : ฟอร์ม ====== -->
+<div id="barForm" class="hidden fixed bottom-0 inset-x-0 z-30 bg-page/95 backdrop-blur border-t border-line">
+  <div class="max-w-md mx-auto px-4 pt-3" style="padding-bottom:max(10px, env(safe-area-inset-bottom))">
+    <div class="flex gap-2">
+      <button id="btnCancelEdit" class="hidden press px-5 py-4 rounded-2xl bg-card text-ink-2 font-medium border border-line">ยกเลิก</button>
+      <button id="btnSave" class="press flex-1 py-4 rounded-2xl bg-accent hover:bg-accent-d text-white text-lg font-medium shadow-soft flex items-center justify-center gap-2">
+        <span id="saveSpinner" class="hidden w-5 h-5 rounded-full border-2 border-white/40 border-t-white animate-spin"></span>
+        <span id="saveLabel">บันทึกจุดจอดรถ</span>
+      </button>
+    </div>
+    <p class="appVersion text-center text-[10px] text-ink-3 font-light mt-1"></p>
+  </div>
+</div>
 
 <!-- ====== CONFIRM MODAL ====== -->
 <div id="modal" class="hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm items-end sm:items-center justify-center">
-  <div class="bg-card w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6 fade-in">
-    <h3 class="text-lg font-medium text-center">ยืนยันการล้างข้อมูล?</h3>
-    <p class="text-sm text-ink-3 font-light text-center mt-1">ข้อมูลจุดจอดและรูปภาพจะถูกลบถาวร</p>
+  <div class="bg-card w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6 fade-in" style="padding-bottom:max(24px, env(safe-area-inset-bottom))">
+    <h3 class="text-lg font-medium text-center">เจอรถแล้วใช่ไหม? 🚗</h3>
+    <p class="text-sm text-ink-3 font-light text-center mt-1">ข้อมูลที่จอดและรูปจะถูกลบ พร้อมจดที่ใหม่ครั้งหน้า</p>
     <div class="grid grid-cols-2 gap-3 mt-6">
-      <button id="modalCancel" class="press py-3.5 rounded-2xl bg-field text-ink-2 font-medium">ยกเลิก</button>
-      <button id="modalOk" class="press py-3.5 rounded-2xl bg-red-500 text-white font-medium">ลบเลย</button>
+      <button id="modalCancel" class="press py-4 rounded-2xl bg-field text-ink-2 font-medium">ยังไม่เจอ</button>
+      <button id="modalOk" class="press py-4 rounded-2xl bg-accent text-white font-medium">เจอแล้ว ลบเลย</button>
     </div>
   </div>
 </div>
@@ -235,10 +269,17 @@ tailwind.config = {
       <span id="viewerPin" class="pin hidden text-4xl">📍</span>
     </div>
   </div>
-  <div id="viewerActions" class="grid grid-cols-3 gap-2 p-4 pb-8">
-    <button id="vDelete" class="press py-3 rounded-2xl bg-white/10 text-red-300 text-sm font-medium">🗑️ ลบรูป</button>
-    <button id="vClearPin" class="press py-3 rounded-2xl bg-white/10 text-white text-sm font-medium">ล้างหมุด</button>
-    <button id="vDone" class="press py-3 rounded-2xl bg-accent text-white text-sm font-medium">เสร็จ</button>
+  <div class="p-4" style="padding-bottom:max(20px, env(safe-area-inset-bottom))">
+    <div id="viewerActions" class="grid grid-cols-3 gap-2">
+      <button id="vDelete" class="press py-4 rounded-2xl bg-white/10 text-red-300 text-sm font-medium">🗑️ ลบรูป</button>
+      <button id="vClearPin" class="press py-4 rounded-2xl bg-white/10 text-white text-sm font-medium">ล้างหมุด</button>
+      <button id="vDone" class="press py-4 rounded-2xl bg-accent text-white text-sm font-medium">เสร็จ</button>
+    </div>
+    <div id="viewerNav" class="grid grid-cols-3 gap-2">
+      <button id="vPrev" class="press py-4 rounded-2xl bg-white/10 text-white text-sm font-medium">‹ ก่อนหน้า</button>
+      <button id="vBack" class="press py-4 rounded-2xl bg-accent text-white text-sm font-medium">ปิด</button>
+      <button id="vNext" class="press py-4 rounded-2xl bg-white/10 text-white text-sm font-medium">ถัดไป ›</button>
+    </div>
   </div>
 </div>
 
@@ -249,7 +290,7 @@ tailwind.config = {
 'use strict';
 
 /** 🏷️ เวอร์ชันแอป — เปลี่ยนทุกครั้งที่ปล่อยของใหม่ (และแก้ VERSION ใน sw.js ให้ตรงกัน) */
-const APP_VERSION = '2.0.0';
+const APP_VERSION = '2.1.0';
 
 /** 🔑 LIFF ID */
 const LIFF_ID = '2011719569-OX5vmgXU';
@@ -505,6 +546,10 @@ function openViewer(mode, photos, index) {
   $('viewerImg').src = p.src;
   $('viewerHint').textContent = mode === 'edit' ? 'แตะบนรูปตรงที่รถจอด เพื่อปักหมุด' : `รูปที่ ${index + 1} จาก ${photos.length}`;
   $('viewerActions').classList.toggle('hidden', mode !== 'edit');
+  $('viewerNav').classList.toggle('hidden', mode === 'edit');
+  const multi = photos.length > 1;
+  $('vPrev').classList.toggle('invisible', !multi);
+  $('vNext').classList.toggle('invisible', !multi);
   $('viewerImg').classList.toggle('cursor-crosshair', mode === 'edit');
   placeViewerPin(p.pin);
   $('viewer').classList.remove('hidden');
@@ -530,7 +575,10 @@ function closeViewer() {
 function showForm(prefill) {
   editing = !!prefill;
   $('viewParked').classList.add('hidden');
+  $('barParked').classList.add('hidden');
   $('viewForm').classList.remove('hidden');
+  $('barForm').classList.remove('hidden');
+  $('installHint').classList.toggle('hidden', !$('installHint').textContent);
   $('introCard').classList.toggle('hidden', editing);
   $('editTitle').classList.toggle('hidden', !editing);
   $('btnCancelEdit').classList.toggle('hidden', !editing);
@@ -554,21 +602,14 @@ function showForm(prefill) {
   window.scrollTo({ top: 0 });
 }
 
-function stepCard(n, icon, title) {
-  const li = el('li', 'bg-card rounded-3xl shadow-soft p-4 fade-in');
-  const head = el('div', 'flex items-center gap-3');
-  head.appendChild(el('span', 'w-8 h-8 shrink-0 rounded-full bg-accent text-white flex items-center justify-center text-sm font-semibold', String(n)));
-  head.appendChild(el('span', 'text-sm text-ink-2', `${icon} ${title}`));
-  li.appendChild(head);
-  return li;
-}
-
-function photoWithPin(p, onTap) {
-  const outer = el('button', 'press block w-full text-center bg-black rounded-2xl overflow-hidden');
-  outer.type = 'button';
-  const wrap = el('span', 'relative inline-block align-top');
-  const img = el('img', 'block max-w-full max-h-[55vh] w-auto h-auto');
-  img.src = p.src; img.alt = 'รูปจุดจอด'; img.loading = 'lazy';
+function photoSlide(p, i, photos) {
+  const slide = el('div', 'snap-center shrink-0 w-full flex items-center justify-center py-2');
+  slide.style.height = 'var(--photoH)';
+  const wrap = el('button', 'relative inline-block');
+  wrap.type = 'button';
+  const img = el('img', 'block max-w-full w-auto h-auto rounded-xl');
+  img.style.maxHeight = 'calc(var(--photoH) - 16px)';
+  img.src = p.src; img.alt = `รูปที่ ${i + 1}`;
   wrap.appendChild(img);
   if (p.pin) {
     const pin = el('span', 'pin text-3xl', '📍');
@@ -576,67 +617,78 @@ function photoWithPin(p, onTap) {
     pin.style.top = (p.pin.y * 100) + '%';
     wrap.appendChild(pin);
   }
-  outer.appendChild(wrap);
-  outer.addEventListener('click', onTap);
-  return outer;
+  wrap.addEventListener('click', () => openViewer('view', photos, i));
+  slide.appendChild(wrap);
+  return slide;
+}
+
+// ให้รูปกินพื้นที่ที่เหลือพอดีจอ ไม่ต้องเลื่อน
+function fitPhotoHeight() {
+  const box = $('photoBox');
+  if ($('viewParked').classList.contains('hidden') || box.classList.contains('hidden')) return;
+  const top = box.getBoundingClientRect().top + window.scrollY;
+  const bar = $('barParked').offsetHeight || 150;
+  const dots = $('photoDots').offsetHeight + 8;
+  const h = Math.max(180, Math.floor(window.innerHeight - top - bar - dots - 12));
+  document.documentElement.style.setProperty('--photoH', h + 'px');
+}
+
+function updateDots() {
+  const t = $('photoTrack');
+  const i = Math.round(t.scrollLeft / Math.max(1, t.clientWidth));
+  [...$('photoDots').children].forEach((d, k) => {
+    d.className = 'h-1.5 rounded-full transition-all ' + (k === i ? 'w-5 bg-accent' : 'w-1.5 bg-line2');
+  });
 }
 
 function showParked(d) {
   $('viewForm').classList.add('hidden');
+  $('barForm').classList.add('hidden');
+  $('installHint').classList.add('hidden');
   $('viewParked').classList.remove('hidden');
-  $('outTime').textContent = 'จอดเมื่อ ' + fmtDateTime(d.savedAt);
+  $('barParked').classList.remove('hidden');
+  $('outTime').textContent = fmtDateTime(d.savedAt);
 
-  const steps = $('steps');
-  steps.replaceChildren();
-  let n = 0;
+  // ลำดับขั้นตอน: ทางเดิม → ชั้น → โซน
   const ex = exitInfo(d.exitType);
+  const exitText = [ex && `${ex.icon} ${ex.label}`, d.exitNote].filter(Boolean).join(' · ');
+  let n = 0;
+  $('rowExit').classList.toggle('hidden', !exitText);
+  if (exitText) { $('numExit').textContent = ++n; $('outExit').textContent = exitText; }
 
-  if (ex || d.exitNote) {
-    const li = stepCard(++n, ex ? ex.icon : '🚪', 'กลับไปทางเดิม');
-    li.appendChild(el('p', 'text-2xl font-semibold mt-2 break-words', [ex && ex.label, d.exitNote].filter(Boolean).join(' · ')));
-    steps.appendChild(li);
+  const hasTiles = !!(d.floor || d.zone);
+  $('rowTiles').classList.toggle('hidden', !hasTiles);
+  if (hasTiles) {
+    $('numFloor').textContent = ++n;
+    $('numZone').textContent = ++n;
+    $('outFloor').textContent = d.floor || '–';
+    $('outZone').textContent = d.zone || '–';
+    $('outFloor').classList.toggle('text-ink-3', !d.floor);
+    $('outZone').classList.toggle('text-ink-3', !d.zone);
   }
-  if (d.floor) {
-    const li = stepCard(++n, '⬇️', 'ไปที่ชั้น');
-    li.appendChild(el('p', 'text-5xl font-semibold mt-2 text-accent-d tracking-wide break-words', d.floor));
-    steps.appendChild(li);
-  }
-  if (d.zone) {
-    const li = stepCard(++n, '🔎', 'มองหาป้ายโซน / เสา');
-    li.appendChild(el('p', 'text-5xl font-semibold mt-2 text-accent-d tracking-wide break-words', d.zone));
-    steps.appendChild(li);
-  }
-  if (d.photos.length) {
-    const li = stepCard(++n, '📸', d.photos.some((p) => p.pin) ? 'เทียบกับรูป รถอยู่ตรงหมุด 📍' : 'เทียบกับรูปที่ถ่ายไว้');
-    const box = el('div', 'mt-3 space-y-2');
-    d.photos.forEach((p, i) => box.appendChild(photoWithPin(p, () => openViewer('view', d.photos, i))));
-    li.appendChild(box);
-    steps.appendChild(li);
-  }
-  if (d.note) {
-    const li = stepCard(++n, '📝', 'โน้ต');
-    li.appendChild(el('p', 'text-base mt-2 break-words', d.note));
-    steps.appendChild(li);
-  }
-  if (!n) {
-    const li = el('li', 'bg-card rounded-3xl shadow-soft p-5 text-center text-sm text-ink-3', 'ไม่ได้จดรายละเอียดไว้ ลองกด "แก้ไขข้อมูล" เพื่อเพิ่ม');
-    steps.appendChild(li);
-  }
+  $('outNote').textContent = d.note ? `📝 ${d.note}` : '';
+  $('outNote').classList.toggle('hidden', !d.note);
+  $('emptyHint').classList.toggle('hidden', !!(exitText || hasTiles || d.note || d.photos.length));
 
-  if (d.gps) {
-    $('btnNav').disabled = false;
-    $('btnNav').classList.remove('opacity-40');
-    $('btnNav').textContent = '📍 นำทางด้วย GPS';
-    $('navHint').textContent = `เหมาะกับที่จอดกลางแจ้ง · ความแม่นยำตอนบันทึก ±${d.gps.acc} ม.`;
-  } else {
-    $('btnNav').disabled = true;
-    $('btnNav').classList.add('opacity-40');
-    $('btnNav').textContent = '📍 ไม่ได้บันทึกพิกัด GPS';
-    $('navHint').textContent = '';
-  }
+  // รูป: เลื่อนซ้าย-ขวาด้วยนิ้วโป้ง
+  const track = $('photoTrack'), dots = $('photoDots');
+  track.replaceChildren(); dots.replaceChildren();
+  $('photoBox').classList.toggle('hidden', !d.photos.length);
+  d.photos.forEach((p, i) => {
+    track.appendChild(photoSlide(p, i, d.photos));
+    if (d.photos.length > 1) dots.appendChild(el('span', ''));
+  });
+  track.scrollLeft = 0;
+  updateDots();
+
+  const nav = $('btnNav');
+  nav.disabled = !d.gps;
+  nav.classList.toggle('opacity-40', !d.gps);
+  $('navLabel').textContent = d.gps ? `นำทาง ±${d.gps.acc}ม.` : 'ไม่มี GPS';
 
   startTimer(d.savedAt);
   window.scrollTo({ top: 0 });
+  requestAnimationFrame(fitPhotoHeight);
 }
 
 function startTimer(ts) {
@@ -777,6 +829,17 @@ function bindEvents() {
   $('vDelete').addEventListener('click', () => { form.photos.splice(viewer.index, 1); closeViewer(); });
   $('vDone').addEventListener('click', closeViewer);
   $('vClose').addEventListener('click', closeViewer);
+  $('vBack').addEventListener('click', closeViewer);
+  const step = (k) => {
+    if (!viewer) return;
+    const len = viewer.photos.length;
+    openViewer(viewer.mode, viewer.photos, (viewer.index + k + len) % len);
+  };
+  $('vPrev').addEventListener('click', () => step(-1));
+  $('vNext').addEventListener('click', () => step(1));
+
+  $('photoTrack').addEventListener('scroll', () => requestAnimationFrame(updateDots), { passive: true });
+  window.addEventListener('resize', fitPhotoHeight);
 
   $('btnSave').addEventListener('click', handleSave);
   $('btnCancelEdit').addEventListener('click', () => { const d = loadData(); d ? showParked(d) : showForm(); editing = false; });
@@ -846,7 +909,7 @@ function setupPwa() {
 
 /* ---------- Boot ---------- */
 (async function boot() {
-  $('appVersion').textContent = `ปุกป็อก v${APP_VERSION}`;
+  document.querySelectorAll('.appVersion').forEach((e) => { e.textContent = `ปุกป็อก v${APP_VERSION}`; });
   bindEvents();
   setupPwa();
   await initLiff();
