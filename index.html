@@ -15,7 +15,6 @@
 <meta name="apple-mobile-web-app-title" content="ปุกป็อก">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="https://cdn.tailwindcss.com"></script>
-<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script>
@@ -94,10 +93,6 @@ tailwind.config = {
       <h1 class="text-lg font-semibold leading-tight">ปุกป็อก</h1>
       <p class="text-[11px] text-ink-3 font-light leading-tight">ตัวช่วยคนขี้ลืม จำที่จอดรถ</p>
     </div>
-  </div>
-  <div id="userChip" class="hidden items-center gap-2 bg-card rounded-full pl-1 pr-3 py-1 shadow-soft">
-    <img id="userPic" class="w-7 h-7 rounded-full object-cover bg-accent-soft" alt="">
-    <span id="userName" class="text-xs text-ink-2 max-w-[90px] truncate"></span>
   </div>
 </header>
 
@@ -218,7 +213,7 @@ tailwind.config = {
         <span class="text-xl leading-none">📍</span><span id="navLabel" class="text-xs text-ink-2 mt-1">นำทาง GPS</span>
       </button>
       <button id="btnShare" class="press py-2.5 rounded-2xl bg-card border border-line shadow-soft flex flex-col items-center">
-        <span class="text-xl leading-none">💬</span><span class="text-xs text-ink-2 mt-1">ส่งเข้าแชท</span>
+        <span class="text-xl leading-none">💬</span><span class="text-xs text-ink-2 mt-1">แชร์</span>
       </button>
       <button id="btnEdit" class="press py-2.5 rounded-2xl bg-card border border-line shadow-soft flex flex-col items-center">
         <span class="text-xl leading-none">✏️</span><span class="text-xs text-ink-2 mt-1">แก้ไข</span>
@@ -285,15 +280,13 @@ tailwind.config = {
 
 <script>
 /* ============================================================
-   ปุกป็อก (PookPok) — LIFF Parking Reminder
+   ปุกป็อก (PookPok) — Parking Reminder PWA
    ============================================================ */
 'use strict';
 
 /** 🏷️ เวอร์ชันแอป — เปลี่ยนทุกครั้งที่ปล่อยของใหม่ (และแก้ VERSION ใน sw.js ให้ตรงกัน) */
-const APP_VERSION = '2.1.0';
+const APP_VERSION = '2.2.0';
 
-/** 🔑 LIFF ID */
-const LIFF_ID = '2011719569-OX5vmgXU';
 
 const KEY = 'pooklok_parking_v2';
 const OLD_KEY = 'pooklok_parking_v1';
@@ -314,7 +307,6 @@ const $ = (id) => document.getElementById(id);
 let form = { photos: [], exitType: '' }; // สถานะฟอร์มที่ยังไม่บันทึก
 let editing = false;
 let elapsedTimer = null;
-let inLiff = false;
 let viewer = null;   // { mode: 'edit'|'view', index, photos }
 
 /* ---------- Utilities ---------- */
@@ -742,9 +734,6 @@ async function handleSave() {
 }
 
 function openExternal(url) {
-  try {
-    if (inLiff && liff.isInClient()) { liff.openWindow({ url, external: true }); return; }
-  } catch (e) { console.warn(e); }
   window.open(url, '_blank', 'noopener');
 }
 
@@ -770,20 +759,16 @@ async function handleShare() {
   ].filter(Boolean);
   const text = lines.join('\n');
 
+  // มือถือ: เปิดเมนูแชร์ของเครื่อง (เลือก LINE / แชทไหนก็ได้) · คอม: คัดลอกข้อความ
+  if (navigator.share) {
+    try { await navigator.share({ text }); return; }
+    catch (e) { if (e.name === 'AbortError') return; }
+  }
   try {
-    if (inLiff && liff.isApiAvailable('shareTargetPicker')) {
-      const res = await liff.shareTargetPicker([{ type: 'text', text }]);
-      if (res) toast('ส่งข้อความเรียบร้อย', 'success');
-      return;
-    }
-    throw new Error('no picker');
-  } catch (e) {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast('คัดลอกข้อมูลแล้ว นำไปวางในแชทได้เลย', 'success');
-    } catch (e2) {
-      toast('แชร์ไม่สำเร็จบนอุปกรณ์นี้', 'error');
-    }
+    await navigator.clipboard.writeText(text);
+    toast('คัดลอกข้อมูลแล้ว นำไปวางในแชทได้เลย', 'success');
+  } catch (e2) {
+    toast('แชร์ไม่สำเร็จบนอุปกรณ์นี้', 'error');
   }
 }
 
@@ -872,36 +857,13 @@ function bindEvents() {
   });
 }
 
-/* ---------- LIFF Init ---------- */
-async function initLiff() {
-  if (typeof liff === 'undefined' || !navigator.onLine) return;
-  try {
-    await Promise.race([
-      liff.init({ liffId: LIFF_ID }),
-      new Promise((_, rej) => setTimeout(() => rej(new Error('LIFF init timeout')), 4000))
-    ]);
-    inLiff = true;
-    if (liff.isLoggedIn()) {
-      const p = await liff.getProfile();
-      $('userName').textContent = p.displayName || '';
-      if (p.pictureUrl) $('userPic').src = p.pictureUrl;
-      $('userChip').classList.remove('hidden');
-      $('userChip').classList.add('flex');
-    }
-  } catch (err) {
-    console.warn('LIFF init failed:', err);
-    // ไม่ขัดจังหวะผู้ใช้ — ทำงานต่อในโหมดเว็บปกติ
-  }
-}
-
 /* ---------- PWA ---------- */
 function setupPwa() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch((e) => console.warn('SW register failed', e));
   }
   const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-  const inLine = /Line\//i.test(navigator.userAgent);
-  if (!standalone && !inLine) {
+  if (!standalone) {
     $('installHint').textContent = 'เคล็ดลับ: กด "เพิ่มลงหน้าจอโฮม" จากเมนูเบราว์เซอร์ จะเปิดได้แม้อยู่ชั้นใต้ดินไม่มีเน็ต';
     $('installHint').classList.remove('hidden');
   }
@@ -912,7 +874,6 @@ function setupPwa() {
   document.querySelectorAll('.appVersion').forEach((e) => { e.textContent = `ปุกป็อก v${APP_VERSION}`; });
   bindEvents();
   setupPwa();
-  await initLiff();
   const data = loadData();
   data ? showParked(data) : showForm();
   $('splash').style.display = 'none';

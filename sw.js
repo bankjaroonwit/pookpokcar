@@ -1,5 +1,5 @@
 /* ปุกป็อก — Service Worker: ให้เปิดแอปได้แม้ไม่มีเน็ต (เช่น ลานจอดใต้ดิน) */
-const VERSION = 'pookpok-2.1.0'; // ให้ตรงกับ APP_VERSION ใน index.html
+const VERSION = 'pookpok-2.2.0'; // ให้ตรงกับ APP_VERSION ใน index.html
 const CORE = [
   './',
   './index.html',
@@ -8,8 +8,8 @@ const CORE = [
   './icons/icon-512.png',
   './icons/apple-touch-icon.png'
 ];
-// ไฟล์จาก CDN ที่หน้าเว็บต้องใช้ (Tailwind, ฟอนต์, LINE SDK)
-const CDN_HOSTS = ['cdn.tailwindcss.com', 'fonts.googleapis.com', 'fonts.gstatic.com', 'static.line-scdn.net'];
+// ไฟล์จาก CDN ที่หน้าเว็บต้องใช้ (Tailwind, ฟอนต์)
+const CDN_HOSTS = ['cdn.tailwindcss.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(VERSION).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
