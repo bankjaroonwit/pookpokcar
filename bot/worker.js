@@ -5,7 +5,7 @@
    ข้อมูลเก็บใน Workers KV (key: p:<chatId>), เจ้าของบอทคือคนแรกที่กด /start
    ============================================================ */
 
-const BOT_VERSION = '1.0.0';
+const BOT_VERSION = '1.1.0';
 
 const FLOORS = ['B3', 'B2', 'B1', 'G', '1', '2', '3', '4'];
 const EXITS = {
@@ -69,11 +69,21 @@ export default {
         commands: [
           { command: 'where', description: 'รถอยู่ไหน' },
           { command: 'done', description: 'เจอรถแล้ว (ล้างข้อมูล)' },
+          { command: 'link', description: 'เชื่อมแอปปุกป็อก / Shortcut' },
           { command: 'help', description: 'วิธีใช้' }
         ]
       });
       const me = await tg(env, 'getMe', {});
       return Response.json({ webhook: hook, bot: me.result && me.result.username, version: BOT_VERSION });
+    }
+
+    // API สำหรับแอปปุกป็อก + iPhone Shortcut (ยืนยันตัวด้วย header X-Pookpok-Key)
+    if (url.pathname.startsWith('/api/')) {
+      if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
+      const chatId = await apiAuth(req, env);
+      if (!chatId) return json({ error: 'unauthorized' }, 401);
+      try { return await handleApi(req, url, env, chatId); }
+      catch (e) { console.error(e && e.stack || e); return json({ error: String(e && e.message || e) }, 500); }
     }
 
     if (req.method === 'POST' && url.pathname === '/webhook') {
@@ -103,7 +113,7 @@ async function loadState(env, chatId) {
   const raw = await env.KV.get(stateKey(chatId));
   return raw ? JSON.parse(raw) : null;
 }
-const saveState = (env, chatId, s) => env.KV.put(stateKey(chatId), JSON.stringify(s));
+const saveState = (env, chatId, s) => { s.updatedAt = Date.now(); return env.KV.put(stateKey(chatId), JSON.stringify(s)); };
 const clearState = (env, chatId) => env.KV.delete(stateKey(chatId));
 
 function newState() {
@@ -226,7 +236,8 @@ const HELP = [
   '🔘 กดเลือกชั้น / ทางออกจากปุ่มใต้การ์ด',
   '📍 กด <b>ส่งตำแหน่งตอนนี้</b> ถ้าจอดกลางแจ้ง จะมีปุ่มนำทางให้',
   '🚗 <b>รถอยู่ไหน</b> = ดึงการ์ดล่าสุดกลับมา (การ์ดถูกปักหมุดไว้บนสุดด้วย)',
-  '✅ <b>เจอรถแล้ว</b> = ล้างข้อมูล'
+  '✅ <b>เจอรถแล้ว</b> = ล้างข้อมูล',
+  '🔗 /link = เชื่อมกับแอปปุกป็อก / iPhone Shortcut'
 ].join('\n');
 
 async function sendWhere(env, chatId) {
@@ -255,6 +266,147 @@ async function doDone(env, chatId) {
   await clearState(env, chatId);
 }
 
+/* ---------- รูป: เพิ่มเข้าที่จอดเดิม หรือเริ่มที่จอดใหม่ ---------- */
+const FULL_MSG = `ใส่รูปได้สูงสุด ${MAX_PHOTOS} รูปต่อที่จอด\nถ้าจอดที่ใหม่ กด ✅ เจอรถแล้ว ก่อนนะ`;
+const isRecent = (s) => s && Date.now() - (s.lastPhotoAt || s.savedAt) < APPEND_WINDOW_MS;
+
+function applyPhoto(s, fileId) {
+  if (s && isRecent(s) && s.photos.length < MAX_PHOTOS) s.photos.push(fileId);
+  else if (s && isRecent(s)) return { full: true, s };
+  else { s = newState(); s.photos.push(fileId); }
+  s.lastPhotoAt = Date.now();
+  return { s };
+}
+
+/* ---------- API สำหรับแอป / Shortcut ---------- */
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'content-type, x-pookpok-key',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Max-Age': '86400'
+};
+const json = (o, status = 200) => new Response(JSON.stringify(o), {
+  status, headers: { ...CORS, 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }
+});
+
+function randomKey() {
+  const b = crypto.getRandomValues(new Uint8Array(18));
+  return btoa(String.fromCharCode(...b)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function apiAuth(req, env) {
+  const key = req.headers.get('x-pookpok-key') || '';
+  const real = await env.KV.get('appkey');
+  if (!real || key.length < 16 || key !== real) return null;
+  const owner = await env.KV.get('owner');
+  return owner ? Number(owner) : null;
+}
+
+// อัปโหลดรูปขึ้น Telegram เพื่อเอา file_id แล้วลบข้อความทิ้ง (การ์ดจะแสดงรูปเอง)
+async function uploadPhoto(env, chatId, blob) {
+  const fd = new FormData();
+  fd.append('chat_id', String(chatId));
+  fd.append('photo', blob, 'photo.jpg');
+  fd.append('disable_notification', 'true');
+  const r = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd }).then((x) => x.json());
+  if (!r.ok) throw new Error('อัปโหลดรูปไม่สำเร็จ: ' + r.description);
+  const fileId = r.result.photo[r.result.photo.length - 1].file_id;
+  await tg(env, 'deleteMessage', { chat_id: chatId, message_id: r.result.message_id });
+  return fileId;
+}
+
+function dataUrlToBlob(d) {
+  const [head, b64] = String(d).split(',');
+  const type = (head.match(/data:([^;]+)/) || [])[1] || 'image/jpeg';
+  const bin = atob(b64 || '');
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type });
+}
+
+const publicState = (s) => s && ({
+  floor: s.floor, zone: s.zone, exitType: s.exit, exitNote: s.exitNote, note: s.note,
+  gps: s.gps, savedAt: s.savedAt, updatedAt: s.updatedAt || s.savedAt, photoCount: s.photos.length
+});
+
+const summary = (s) => ['✅ บันทึกแล้ว', s.floor && `ชั้น ${s.floor}`, s.zone && `โซน ${s.zone}`, s.photos.length && `รูป ${s.photos.length}`]
+  .filter(Boolean).join(' · ');
+
+async function handleApi(req, url, env, chatId) {
+  const path = url.pathname;
+
+  if (req.method === 'GET' && path === '/api/state') {
+    return json({ state: publicState(await loadState(env, chatId)) });
+  }
+
+  if (req.method === 'GET' && path === '/api/photo') {
+    const s = await loadState(env, chatId);
+    const i = Number(url.searchParams.get('i') || 0);
+    if (!s || !s.photos[i]) return json({ error: 'not found' }, 404);
+    const f = await tg(env, 'getFile', { file_id: s.photos[i] });
+    if (!f.ok) return json({ error: 'file error' }, 502);
+    const img = await fetch(`https://api.telegram.org/file/bot${env.BOT_TOKEN}/${f.result.file_path}`);
+    return new Response(img.body, { headers: { ...CORS, 'content-type': 'image/jpeg', 'cache-control': 'private, max-age=86400' } });
+  }
+
+  // แอปบันทึก/แก้ไขที่จอด (รูปส่งมาเป็น data URL)
+  if (req.method === 'POST' && path === '/api/state') {
+    const body = await req.json();
+    const prev = await loadState(env, chatId);
+    const same = prev && prev.savedAt === body.savedAt;
+    const s = same ? prev : newState();
+    if (!same) {
+      s.savedAt = body.savedAt || Date.now();
+      if (prev) {
+        // ที่จอดใหม่จากแอป: เอาการ์ดเก่าออก
+        await tg(env, 'unpinAllChatMessages', { chat_id: chatId });
+        if (prev.cardId) await tg(env, 'deleteMessage', { chat_id: chatId, message_id: prev.cardId });
+      }
+    }
+    s.floor = String(body.floor || '').slice(0, 20);
+    s.zone = String(body.zone || '').slice(0, 30);
+    s.exit = EXITS[body.exitType] ? body.exitType : '';
+    s.exitNote = String(body.exitNote || '').slice(0, 80);
+    s.note = String(body.note || '').slice(0, 200);
+    s.gps = body.gps && typeof body.gps.lat === 'number' ? body.gps : null;
+    const photos = Array.isArray(body.photos) ? body.photos.slice(0, MAX_PHOTOS) : [];
+    s.photos = [];
+    for (const p of photos) s.photos.push(await uploadPhoto(env, chatId, dataUrlToBlob(p)));
+    s.lastPhotoAt = Date.now();
+    await renderCard(env, chatId, s, { resend: true });
+    await saveState(env, chatId, s);
+    return json({ ok: true, updatedAt: s.updatedAt });
+  }
+
+  if (req.method === 'POST' && path === '/api/done') {
+    const had = await loadState(env, chatId);
+    await doDone(env, chatId);
+    if (had) await tg(env, 'sendMessage', { chat_id: chatId, text: '👋 เจอรถแล้ว (จากแอป) ล้างข้อมูลเรียบร้อย', disable_notification: true });
+    return json({ ok: true });
+  }
+
+  // iPhone Shortcut: multipart form — photo (ไฟล์), text (ไม่บังคับ เช่น "B2 C4")
+  if (req.method === 'POST' && path === '/api/shot') {
+    const form = await req.formData();
+    const file = form.get('photo');
+    const text = String(form.get('text') || '').trim();
+    let s = await loadState(env, chatId);
+    if (file && typeof file !== 'string') {
+      if (s && isRecent(s) && s.photos.length >= MAX_PHOTOS) return new Response(FULL_MSG, { status: 409, headers: CORS });
+      const fileId = await uploadPhoto(env, chatId, file);
+      s = applyPhoto(s, fileId).s;
+    } else if (!s) {
+      s = newState();
+    }
+    if (text) Object.assign(s, parseText(text));
+    await renderCard(env, chatId, s, { resend: true });
+    await saveState(env, chatId, s);
+    return new Response(summary(s), { headers: { ...CORS, 'content-type': 'text/plain; charset=utf-8' } });
+  }
+
+  return json({ error: 'not found' }, 404);
+}
+
 /* ---------- Update handler ---------- */
 async function handleUpdate(update, env) {
   if (update.callback_query) return handleCallback(update.callback_query, env);
@@ -271,6 +423,26 @@ async function handleUpdate(update, env) {
   }
   if (!(await checkOwner(env, chatId, false))) return;
 
+  if (/^\/link\b/.test(text)) {
+    let key = await env.KV.get('appkey');
+    if (!key || /\bnew\b/i.test(text)) { key = randomKey(); await env.KV.put('appkey', key); }
+    const appLink = `https://bankjaroonwit.github.io/pookpokcar/#link=${key}`;
+    const origin = 'https://pookpok-bot.pookpok.workers.dev';
+    return tg(env, 'sendMessage', {
+      chat_id: chatId, parse_mode: 'HTML', disable_web_page_preview: true,
+      text: [
+        '🔗 <b>เชื่อมแอปปุกป็อก</b>',
+        'ในแอป กดปุ่ม 🔗 มุมขวาบน แล้ววางลิงก์นี้:',
+        `<code>${appLink}</code>`,
+        '',
+        '📱 <b>iPhone Shortcut</b> (ถ่ายรูปเข้าบอททันที)',
+        `URL: <code>${origin}/api/shot</code>`,
+        `Header <code>X-Pookpok-Key</code>: <code>${key}</code>`,
+        '',
+        '<i>🔒 กุญแจนี้ใช้แทนตัวคุณ อย่าส่งให้ใคร · ถ้าหลุด พิมพ์ /link new เพื่อเปลี่ยนใหม่</i>'
+      ].join('\n')
+    });
+  }
   if (/^\/help\b/.test(text)) return tg(env, 'sendMessage', { chat_id: chatId, text: HELP, parse_mode: 'HTML', reply_markup: MAIN_KEYBOARD });
   if (/^\/where\b/.test(text) || text.includes('รถอยู่ไหน')) return sendWhere(env, chatId);
   if (/^\/done\b/.test(text) || text.includes('เจอรถแล้ว')) return askDone(env, chatId);
@@ -278,20 +450,15 @@ async function handleUpdate(update, env) {
 
   let s = await loadState(env, chatId);
   let fresh = false;
-  const recent = s && Date.now() - (s.lastPhotoAt || s.savedAt) < APPEND_WINDOW_MS;
 
   if (m.photo) {
-    const fileId = m.photo[m.photo.length - 1].file_id;
-    if (s && recent && s.photos.length < MAX_PHOTOS) {
-      s.photos.push(fileId);
-    } else if (s && recent) {
-      await tg(env, 'sendMessage', { chat_id: chatId, text: `ใส่รูปได้สูงสุด ${MAX_PHOTOS} รูปต่อที่จอด\nถ้าจอดที่ใหม่ กด ✅ เจอรถแล้ว ก่อนนะ` });
+    const res = applyPhoto(s, m.photo[m.photo.length - 1].file_id);
+    if (res.full) {
+      await tg(env, 'sendMessage', { chat_id: chatId, text: FULL_MSG });
       return;
-    } else {
-      s = newState(); fresh = true;
-      s.photos.push(fileId);
     }
-    s.lastPhotoAt = Date.now();
+    fresh = res.s !== s;
+    s = res.s;
   } else if (m.location) {
     if (!s) { s = newState(); fresh = true; }
     s.gps = { lat: +m.location.latitude.toFixed(6), lng: +m.location.longitude.toFixed(6),

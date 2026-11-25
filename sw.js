@@ -1,5 +1,5 @@
 /* ปุกป็อก — Service Worker: ให้เปิดแอปได้แม้ไม่มีเน็ต (เช่น ลานจอดใต้ดิน) */
-const VERSION = 'pookpok-2.4.0'; // ให้ตรงกับ APP_VERSION ใน index.html
+const VERSION = 'pookpok-2.5.0'; // ให้ตรงกับ APP_VERSION ใน index.html
 const CORE = [
   './',
   './index.html',
