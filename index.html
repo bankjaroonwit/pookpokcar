@@ -115,15 +115,9 @@ tailwind.config = {
       <p class="text-[11px] text-ink-3 font-light">จำที่จอดรถ</p>
     </div>
   </div>
-  <div class="flex items-center gap-2">
-    <span id="headStatus" class="hidden items-center gap-1.5 text-xs font-medium text-accent-d bg-accent-soft rounded-full px-3 py-1.5">
-      <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span> จอดอยู่
-    </span>
-    <button id="btnLink" class="press relative w-10 h-10 rounded-full bg-card shadow-soft flex items-center justify-center text-ink-2" aria-label="เชื่อมกับ Telegram">
-      <span data-i="link" data-s="w-[18px] h-[18px]"></span>
-      <span id="linkDot" class="hidden absolute top-1 right-1 w-2.5 h-2.5 rounded-full border-2 border-white"></span>
-    </button>
-  </div>
+  <span id="headStatus" class="hidden items-center gap-1.5 text-xs font-medium text-accent-d bg-accent-soft rounded-full px-3 py-1.5">
+    <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span> จอดอยู่
+  </span>
 </header>
 
 <main id="main" class="px-4 pb-40 pt-2 max-w-md mx-auto">
@@ -194,7 +188,7 @@ tailwind.config = {
       </div>
     </div>
 
-    <p class="text-center text-[11px] text-ink-3 font-light mt-5 flex items-center justify-center gap-1"><span data-i="lock" data-s="w-3.5 h-3.5"></span> <span id="privacyNote">ข้อมูลเก็บไว้ในเครื่องคุณเท่านั้น</span></p>
+    <p class="text-center text-[11px] text-ink-3 font-light mt-5 flex items-center justify-center gap-1"><span data-i="lock" data-s="w-3.5 h-3.5"></span> ข้อมูลเก็บไว้ในเครื่องคุณเท่านั้น</p>
     <p id="installHint" class="hidden text-center text-[11px] text-ink-3 font-light mt-2 px-6"></p>
   </section>
 
@@ -309,32 +303,6 @@ tailwind.config = {
   </div>
 </div>
 
-<!-- ====== LINK SHEET : เชื่อม Telegram ====== -->
-<div id="linkSheet" class="hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm items-end sm:items-center justify-center">
-  <div class="bg-card w-full sm:max-w-sm rounded-t-[28px] sm:rounded-[28px] p-6 pt-3 fade-in" style="padding-bottom:max(22px, env(safe-area-inset-bottom))">
-    <div class="mx-auto w-10 h-1 rounded-full bg-line mb-5 sm:hidden"></div>
-    <div class="flex items-center gap-3">
-      <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center" style="background:#229ED9"><span data-i="send" data-s="w-6 h-6"></span></div>
-      <div class="leading-tight">
-        <h3 class="text-lg font-semibold">เชื่อมกับ Telegram</h3>
-        <p id="linkStatus" class="text-sm text-ink-3"></p>
-      </div>
-    </div>
-    <div id="linkForm" class="mt-5">
-      <p class="text-sm text-ink-2">พิมพ์ <b>/link</b> ในบอท <b>@PookpokBot</b> แล้ววางลิงก์ที่ได้ตรงนี้</p>
-      <input id="inpLink" type="text" placeholder="วางลิงก์ หรือกุญแจ" autocomplete="off" autocapitalize="off" spellcheck="false"
-        class="w-full mt-3 h-12 px-4 rounded-2xl bg-field border border-transparent focus:border-accent text-base placeholder:text-ink-3">
-      <button id="btnLinkSave" class="press w-full mt-3 h-14 rounded-2xl grad text-white font-medium shadow-glow">เชื่อมต่อ</button>
-    </div>
-    <div id="linkOn" class="mt-5 space-y-2">
-      <p class="text-sm text-ink-2 leading-relaxed">ถ่ายรูปเข้าบอท (หรือผ่าน Shortcut) แล้วเปิดแอปนี้ จะเห็นที่จอดทันที · บันทึกหรือกดเจอรถแล้วในแอป ก็อัปเดตในบอทด้วย</p>
-      <button id="btnSyncNow" class="press w-full h-12 rounded-2xl bg-field text-ink-2 font-medium flex items-center justify-center gap-2"><span data-i="refresh" data-s="w-4 h-4"></span> ซิงก์ตอนนี้</button>
-      <button id="btnUnlink" class="press w-full h-12 rounded-2xl text-red-500 font-medium">ยกเลิกการเชื่อม</button>
-    </div>
-    <button id="btnLinkClose" class="press w-full mt-2 h-12 rounded-2xl text-ink-3 font-medium">ปิด</button>
-  </div>
-</div>
-
 <!-- ====== PHOTO VIEWER / PIN EDITOR ====== -->
 <div id="viewer" class="hidden fixed inset-0 z-50 bg-black flex-col">
   <div class="flex items-center justify-between px-4 pb-2 text-white" style="padding-top:max(14px, env(safe-area-inset-top))">
@@ -368,7 +336,7 @@ tailwind.config = {
 'use strict';
 
 /** 🏷️ เวอร์ชันแอป — เปลี่ยนทุกครั้งที่ปล่อยของใหม่ (และแก้ VERSION ใน sw.js ให้ตรงกัน) */
-const APP_VERSION = '2.5.0';
+const APP_VERSION = '2.6.0';
 
 const KEY = 'pooklok_parking_v2';
 const OLD_KEY = 'pooklok_parking_v1';
@@ -409,9 +377,6 @@ const ICONS = {
   stairs: '<path d="M3 21h5v-5h5v-5h5V6h3"/>',
   door: '<path d="M14 4h3a1 1 0 0 1 1 1v15M3 20h18"/><path d="M14 4.5V20l-8-1.5V5.8a1 1 0 0 1 .8-1l6-1.2a1 1 0 0 1 1.2 1z"/><path d="M11 12v.01"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/>',
-  link: '<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
-  refresh: '<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>',
-  send: '<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>',
   alert: '<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>'
 };
 function icon(name, cls = 'w-5 h-5') {
@@ -939,7 +904,6 @@ async function handleSave() {
     showParked(loadData() || data);
     toast(editing ? 'แก้ไขเรียบร้อย' : 'จดที่จอดแล้ว', 'success');
     editing = false;
-    if (getLink()) { setSync({ dirty: true }); syncNow(); }
   }
 
   btn.disabled = false;
@@ -1052,7 +1016,6 @@ function bindEvents() {
 
   $('modalOk').addEventListener('click', () => {
     try { localStorage.removeItem(KEY); } catch (e) { console.warn(e); }
-    if (getLink()) { setSync({ pendingDone: true, dirty: false, remoteUpdatedAt: 0 }); syncNow(); }
     closeModal();
     showForm();
     toast('ล้างข้อมูลแล้ว ขับรถปลอดภัยนะ', 'success');
@@ -1062,7 +1025,7 @@ function bindEvents() {
   $('inpExit').addEventListener('keydown', (e) => { if (e.key === 'Enter') e.target.blur(); });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { if (viewer) closeViewer(); else { closeModal(); closeLinkSheet(); } }
+    if (e.key === 'Escape') { if (viewer) closeViewer(); else closeModal(); }
   });
 
   // กลับมาที่แอป → อัปเดตเวลาที่ผ่านไป
@@ -1070,183 +1033,8 @@ function bindEvents() {
     if (!document.hidden) {
       const d = loadData();
       if (d && !$('viewParked').classList.contains('hidden')) $('outElapsed').textContent = fmtElapsed(d.savedAt);
-      syncNow();
     }
   });
-  window.addEventListener('online', () => syncNow());
-}
-
-/* ---------- ซิงก์กับบอท Telegram ---------- */
-const API = 'https://pookpok-bot.pookpok.workers.dev';
-const LINK_KEY = 'pookpok_link_v1';
-const SYNC_KEY = 'pookpok_sync_v1';
-let syncing = false;
-
-const getLink = () => { try { return localStorage.getItem(LINK_KEY) || ''; } catch (e) { return ''; } };
-const getSync = () => { try { return JSON.parse(localStorage.getItem(SYNC_KEY)) || {}; } catch (e) { return {}; } };
-const setSync = (patch) => localStorage.setItem(SYNC_KEY, JSON.stringify({ ...getSync(), ...patch }));
-
-function parseLinkInput(v) {
-  const t = String(v || '').trim();
-  const m = t.match(/[#&?]link=([A-Za-z0-9_-]{16,})/);
-  if (m) return m[1];
-  return /^[A-Za-z0-9_-]{16,}$/.test(t) ? t : '';
-}
-
-async function api(path, opts = {}, key = getLink()) {
-  if (!key) throw new Error('ยังไม่ได้เชื่อมบอท');
-  const r = await fetch(API + path, { ...opts, headers: { ...(opts.headers || {}), 'X-Pookpok-Key': key } });
-  if (r.status === 401) { const e = new Error('กุญแจไม่ถูกต้อง ลองพิมพ์ /link ในบอทใหม่'); e.auth = true; throw e; }
-  if (!r.ok) throw new Error('เซิร์ฟเวอร์ตอบ ' + r.status);
-  return r;
-}
-
-function setLinkDot(state) {
-  const d = $('linkDot');
-  if (!getLink()) { d.classList.add('hidden'); return; }
-  d.classList.remove('hidden');
-  d.className = 'absolute top-1 right-1 w-2.5 h-2.5 rounded-full border-2 border-white ' +
-    (state === 'syncing' ? 'bg-sky-500 animate-pulse' : state === 'error' ? 'bg-amber-500' : 'bg-emerald-500');
-  $('privacyNote').textContent = 'ข้อมูลซิงก์กับบอท Telegram ของคุณ';
-}
-
-// วาดหมุดลงบนรูป (Telegram แสดงหมุดแบบในแอปไม่ได้)
-function bakePin(p) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const c = document.createElement('canvas');
-      c.width = img.width; c.height = img.height;
-      const x = c.getContext('2d');
-      x.drawImage(img, 0, 0);
-      const r = Math.max(10, img.width * 0.035), px = p.pin.x * img.width, py = p.pin.y * img.height, cy = py - r * 2.2;
-      x.fillStyle = '#EF4444'; x.strokeStyle = '#fff'; x.lineWidth = r * 0.28;
-      x.beginPath(); x.moveTo(px, py);
-      x.lineTo(px - r * 0.82, cy + r * 0.58); x.arc(px, cy, r, Math.PI * 0.8, Math.PI * 0.2); x.closePath();
-      x.fill(); x.stroke();
-      x.fillStyle = '#fff'; x.beginPath(); x.arc(px, cy, r * 0.38, 0, Math.PI * 2); x.fill();
-      resolve(c.toDataURL('image/jpeg', 0.8));
-    };
-    img.onerror = () => resolve(p.src);
-    img.src = p.src;
-  });
-}
-
-async function pushLocal(d) {
-  const photos = [];
-  for (const p of d.photos) photos.push(p.pin ? await bakePin(p) : p.src);
-  const body = { floor: d.floor, zone: d.zone, exitType: d.exitType, exitNote: d.exitNote, note: d.note, gps: d.gps, savedAt: d.savedAt, photos };
-  const r = await (await api('/api/state', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })).json();
-  setSync({ remoteUpdatedAt: r.updatedAt, dirty: false });
-}
-
-async function pullRemote(st) {
-  const photos = [];
-  for (let i = 0; i < st.photoCount; i++) {
-    const b = await (await api('/api/photo?i=' + i)).blob();
-    photos.push({ src: await compressImage(new File([b], 'p.jpg', { type: b.type || 'image/jpeg' })), pin: null });
-  }
-  saveData({ floor: st.floor || '', zone: st.zone || '', exitType: st.exitType || '', exitNote: st.exitNote || '',
-             note: st.note || '', gps: st.gps || null, savedAt: st.savedAt, photos });
-  setSync({ remoteUpdatedAt: st.updatedAt, dirty: false });
-}
-
-// วาดหน้าใหม่ตามข้อมูลล่าสุด (ไม่ขัดตอนกำลังแก้ไข/กรอกฟอร์ม)
-function refreshView() {
-  if (!$('viewForm').classList.contains('hidden') && (editing || form.photos.length || $('inpFloor').value || $('inpZone').value)) return;
-  const d = loadData();
-  d ? showParked(d) : showForm();
-}
-
-async function syncNow({ manual = false } = {}) {
-  if (!getLink() || syncing) return;
-  if (!navigator.onLine) { if (manual) toast('ไม่มีเน็ต ไว้ซิงก์ทีหลัง', 'error'); return; }
-  syncing = true; setLinkDot('syncing');
-  try {
-    let sy = getSync();
-    if (sy.pendingDone) {
-      await api('/api/done', { method: 'POST' });
-      setSync({ pendingDone: false, remoteUpdatedAt: 0 });
-      sy = getSync();
-    }
-    const local = loadData();
-    if (sy.dirty && local) {
-      await pushLocal(local);
-      if (manual) toast('ส่งเข้าบอทแล้ว', 'success');
-    } else {
-      const { state } = await (await api('/api/state')).json();
-      if (!state) {
-        // บอทล้างแล้ว (กดเจอรถแล้วใน Telegram) → ล้างในแอปด้วย
-        if (local && sy.remoteUpdatedAt) { localStorage.removeItem(KEY); setSync({ remoteUpdatedAt: 0 }); refreshView(); toast('ล้างข้อมูลตาม Telegram แล้ว'); }
-        else if (manual) toast('ซิงก์แล้ว ไม่มีข้อมูลใหม่', 'success');
-      } else if (state.updatedAt > (sy.remoteUpdatedAt || 0)) {
-        await pullRemote(state);
-        refreshView();
-        toast('อัปเดตที่จอดจาก Telegram แล้ว', 'success');
-      } else if (manual) toast('ข้อมูลตรงกันแล้ว', 'success');
-    }
-    setLinkDot('ok');
-  } catch (e) {
-    console.warn('sync', e);
-    setLinkDot('error');
-    if (manual || e.auth) toast(e.message || 'ซิงก์ไม่สำเร็จ', 'error');
-  } finally {
-    syncing = false;
-  }
-}
-
-async function linkWith(key) {
-  try {
-    await api('/api/state', {}, key);
-  } catch (e) {
-    toast(e.auth ? 'กุญแจไม่ถูกต้อง' : 'เชื่อมไม่สำเร็จ ลองใหม่ตอนมีเน็ต', 'error');
-    return false;
-  }
-  localStorage.setItem(LINK_KEY, key);
-  // ข้อมูลในเครื่องที่ยังไม่เคยส่ง → ส่งเข้าบอท
-  setSync({ remoteUpdatedAt: 0, dirty: !!loadData(), pendingDone: false });
-  toast('เชื่อมกับ Telegram แล้ว', 'success');
-  renderLinkSheet();
-  await syncNow();
-  return true;
-}
-
-function renderLinkSheet() {
-  const on = !!getLink();
-  $('linkStatus').textContent = on ? 'เชื่อมแล้ว ✓' : 'ยังไม่ได้เชื่อม';
-  $('linkForm').classList.toggle('hidden', on);
-  $('linkOn').classList.toggle('hidden', !on);
-}
-function openLinkSheet() { renderLinkSheet(); $('inpLink').value = ''; $('linkSheet').classList.remove('hidden'); $('linkSheet').classList.add('flex'); }
-function closeLinkSheet() { $('linkSheet').classList.add('hidden'); $('linkSheet').classList.remove('flex'); }
-
-function setupSync() {
-  $('btnLink').addEventListener('click', () => { buzz(); openLinkSheet(); });
-  $('btnLinkClose').addEventListener('click', closeLinkSheet);
-  $('linkSheet').addEventListener('click', (e) => { if (e.target.id === 'linkSheet') closeLinkSheet(); });
-  $('btnLinkSave').addEventListener('click', async () => {
-    const key = parseLinkInput($('inpLink').value);
-    if (!key) return toast('วางลิงก์จาก /link ในบอทก่อนนะ', 'error');
-    $('btnLinkSave').disabled = true;
-    if (await linkWith(key)) closeLinkSheet();
-    $('btnLinkSave').disabled = false;
-  });
-  $('btnSyncNow').addEventListener('click', () => syncNow({ manual: true }));
-  $('btnUnlink').addEventListener('click', () => {
-    localStorage.removeItem(LINK_KEY); localStorage.removeItem(SYNC_KEY);
-    setLinkDot(); $('privacyNote').textContent = 'ข้อมูลเก็บไว้ในเครื่องคุณเท่านั้น';
-    renderLinkSheet(); toast('ยกเลิกการเชื่อมแล้ว');
-  });
-
-  // เปิดจากลิงก์ /link ตรงๆ (#link=...)
-  const fromHash = parseLinkInput(location.hash);
-  if (fromHash) {
-    history.replaceState(null, '', location.pathname + location.search);
-    linkWith(fromHash);
-  } else {
-    setLinkDot('ok');
-    syncNow();
-  }
 }
 
 /* ---------- PWA ---------- */
@@ -1262,6 +1050,8 @@ function setupPwa() {
 
 /* ---------- Boot ---------- */
 (function boot() {
+  // ล้างข้อมูลการเชื่อม Telegram ของเวอร์ชันก่อน (เลิกใช้แล้ว)
+  try { localStorage.removeItem('pookpok_link_v1'); localStorage.removeItem('pookpok_sync_v1'); } catch (e) { /* ไม่เป็นไร */ }
   hydrateIcons();
   document.querySelectorAll('.appVersion').forEach((e) => { e.textContent = `ปุกป็อก v${APP_VERSION}`; });
   bindEvents();
@@ -1269,7 +1059,6 @@ function setupPwa() {
   const data = loadData();
   data ? showParked(data) : showForm();
   $('splash').style.display = 'none';
-  setupSync();
 })();
 </script>
 </body>
